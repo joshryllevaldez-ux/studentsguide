@@ -1,0 +1,25 @@
+STUDENTSGUIDE.COM — AI APPLICATION
+Struggles less, study smart.
+
+RUN ON WINDOWS
+1. Extract the StudentsGUIDE_AI_Application_Windows.zip file.
+2. Install Python 3.10 or newer from https://www.python.org/downloads/ .
+   During setup, enable "Add Python to PATH".
+3. Open the extracted StudentsGUIDE folder.
+4. Double-click start_studentsguide.bat.
+5. The first launch creates a local Python environment and installs packages.
+6. Your default browser opens when the application is ready.
+7. Keep the launcher window open while using StudentsGUIDE. Press CTRL+C there to stop it.
+
+CONNECT LIVE AI
+1. Run the app once, then close it.
+2. Open the .env file in Notepad.
+3. Add your API key after OPENAI_API_KEY= .
+4. Save .env and restart the app.
+
+The default model is gpt-6.1-terra. API usage may be billed separately from a ChatGPT subscription. Set usage limits in your API account. Keep your API key private.
+
+WITHOUT AN API KEY
+Select "Explore sample experience" to explore the interface and quiz controls. The sample content is illustrative, not generated from your uploaded lecture.
+
+The application runs locally on your computer. It is not a public website and does not require a domain name.
