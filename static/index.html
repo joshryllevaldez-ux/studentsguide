@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1245a5" />
+  <meta name="theme-color" content="#050B24" />
   <meta name="description" content="StudentsGUIDE turns lecture PowerPoints into clear study guides, examples, brain hacks and interactive quizzes." />
   <title>StudentsGUIDE.com | Struggles less, study smart.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -440,6 +440,121 @@ body{font-feature-settings:"ss01" on,"cv11" on;letter-spacing:-.12px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
+
+/* === STUDENTSGUIDE FUTURISTIC PRODUCT-WIDE REDESIGN === */
+:root{
+ --navy:#050b24!important;--blue:#087bff!important;--blue2:#00d9ff!important;
+ --ink:#f4f7ff!important;--muted:#b8c7e8!important;--line:#29416f!important;
+ --paper:#0b1740!important;--bg:#050b24!important;--shadow:0 24px 70px rgba(0,0,0,.34)!important;
+ color-scheme:dark
+}
+html{background:#050b24!important;scroll-padding-top:100px}
+body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),radial-gradient(ellipse at 90% 30%,#20114f 0,transparent 32%),#050b24!important;color:#f4f7ff!important}
+.topbar{height:76px!important;padding:0 clamp(18px,5vw,76px)!important;background:rgba(5,11,36,.78)!important;border:1px solid #ffffff13!important;border-radius:0 0 20px 20px!important;backdrop-filter:blur(22px) saturate(150%)!important;box-shadow:0 12px 40px #0005!important}
+.brand{color:#fff!important}.brand span em{color:#00d9ff!important}
+.brand-symbol{background:linear-gradient(145deg,#087bff,#9146ff)!important;box-shadow:0 0 28px #087bff70!important}
+.navlinks{gap:clamp(10px,2vw,27px)!important}.navlinks a{color:#b8c7e8!important}.navlinks a:hover{color:#00d9ff!important}
+.nav-cta{background:linear-gradient(110deg,#087bff,#00bfe9 55%,#9146ff)!important;color:white!important;border:1px solid #ffffff36!important;box-shadow:0 8px 28px #087bff55!important}
+.container{width:min(1220px,calc(100% - 42px))!important}
+.hero{position:relative;isolation:isolate;overflow:hidden;padding:65px 0 54px!important;background:radial-gradient(ellipse at 78% 20%,#087bff2b,transparent 33%),radial-gradient(ellipse at 15% 65%,#9146ff20,transparent 34%),linear-gradient(180deg,#07112f,#050b24)!important}
+.hero:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.16;background-image:linear-gradient(#6bbcff20 1px,transparent 1px),linear-gradient(90deg,#6bbcff20 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+.eyebrow{background:#0e2350!important;border:1px solid #3c73b8!important;color:#9bdcff!important;box-shadow:0 0 25px #087bff24!important}
+.eyebrow .dot{background:#10d99a!important;box-shadow:0 0 0 4px #10d99a25,0 0 16px #10d99a!important}
+.hero h1{color:#fff!important;text-shadow:0 8px 35px #087bff20!important}.hero h1 span{background:linear-gradient(95deg,#48a5ff,#00e1ff 48%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+.hero-copy{color:#b8c7e8!important;max-width:610px!important}
+.hero-benefits span{color:#b8c7e8!important}.hero-benefits span b{color:#00d9ff!important}
+.btn{border-radius:14px!important}.btn-primary{background:linear-gradient(110deg,#087bff,#00bfe9 60%,#9146ff)!important;color:#fff!important;border:1px solid #ffffff38!important;box-shadow:0 12px 34px #087bff4a,inset 0 1px #ffffff55!important}
+.btn-primary:hover{box-shadow:0 16px 42px #087bff75!important;filter:brightness(1.1)}
+.btn-light{background:#12234b!important;border:1px solid #38517e!important;color:#dceaff!important}
+.hero-scene{filter:drop-shadow(0 25px 45px #0008)!important}
+.scene-glow{background:radial-gradient(ellipse,#087bff55,transparent 68%)!important;filter:blur(8px)}
+.scene-orbit{border-color:#4ebaff45!important;box-shadow:0 0 24px #087bff16!important}
+.float-panel{background:linear-gradient(145deg,#142a57eF,#0b1740eF)!important;border:1px solid #56baff50!important;color:#fff!important;box-shadow:0 18px 45px #0007,0 0 30px #087bff18!important;backdrop-filter:blur(18px)!important}
+.float-panel small,.float-panel-kicker{color:#b8c7e8!important}
+.hero-lower-grid{gap:18px!important}
+.how-panel{background:linear-gradient(145deg,#0e2049,#0a1536)!important;border:1px solid #34558a!important;border-radius:24px!important;box-shadow:0 20px 55px #0005!important}
+.how-intro h2{color:#fff!important}.how-intro p,.how-step small{color:#aebfe0!important}.how-step{color:#fff!important}
+.how-step-icon{box-shadow:0 0 22px #087bff25!important}
+.how-arrow{color:#00d9ff!important}
+.upload-card{background:linear-gradient(145deg,#101f48ed,#0a1536f2)!important;border:1px solid #3b6da5!important;border-radius:25px!important;box-shadow:0 25px 65px #0007,0 0 35px #087bff17!important;backdrop-filter:blur(20px)!important}
+.upload-card:before{background:radial-gradient(circle,#087bff35,transparent 70%)!important}
+.card-title{color:#fff!important}.small-pill{background:#112c5b!important;border:1px solid #3974b4!important;color:#a8e6ff!important}
+.dropzone{background:linear-gradient(145deg,#0b1a3c,#0e214b)!important;border:2px dashed #238cf5!important;box-shadow:inset 0 0 35px #087bff10!important}
+.dropzone.dragover{background:#102d61!important;border-color:#00d9ff!important;box-shadow:0 0 30px #00d9ff28!important}
+.dropzone strong{color:#fff!important}.dropzone p,.privacy-note,.status-line{color:#aebfe0!important}
+.upload-icon{background:linear-gradient(145deg,#087bff,#9146ff)!important;color:#fff!important;box-shadow:0 0 28px #087bff66!important}
+.browse{color:#00d9ff!important}.file-line{background:#102650!important;border-color:#3a6497!important;color:#fff!important}
+.file-name{color:#fff!important}.file-size{color:#aebfe0!important}
+.section{background:transparent!important;padding:78px 0!important}
+.section-head h2{color:#fff!important}.section-head p{color:#b8c7e8!important}.section-kicker{color:#00d9ff!important}
+.feature{background:linear-gradient(145deg,#101f48,#0a1536)!important;border:1px solid #2b4777!important;border-radius:22px!important;box-shadow:0 18px 42px #0004!important;position:relative;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s!important}
+.feature:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,#087bff18,transparent 48%);pointer-events:none}
+.feature:hover{transform:translateY(-7px)!important;border-color:#39a9ff!important;box-shadow:0 22px 50px #087bff20!important}
+.feature-icon{background:linear-gradient(145deg,#087bff,#00bfe9)!important;color:#fff!important;box-shadow:0 0 25px #087bff40!important}
+.feature h3{color:#fff!important}.feature p{color:#b8c7e8!important}
+.feature:nth-child(2) .feature-icon{background:linear-gradient(145deg,#f59e0b,#d946ef)!important}
+.feature:nth-child(3) .feature-icon{background:linear-gradient(145deg,#9146ff,#d946ef)!important}
+.feature:nth-child(4) .feature-icon{background:linear-gradient(145deg,#00a8cc,#10d99a)!important}
+.modes-strip{background:radial-gradient(ellipse at 90% 0%,#9146ff55,transparent 40%),linear-gradient(110deg,#0b2b69,#0b1740 70%)!important;border:1px solid #3d70aa!important;box-shadow:0 22px 55px #0005!important}
+.modes-strip h3{color:#fff!important}.modes-strip p{color:#b8c7e8!important}.mode-chips span{background:#ffffff0c!important;border-color:#5a83bb!important;color:#dceaff!important}
+.campus-art{background:#0b1740!important;border:1px solid #31517e!important;box-shadow:0 20px 45px #0005!important}
+.campus-caption{background:#0b1740!important;color:#b8c7e8!important}
+.step{background:linear-gradient(145deg,#101f48,#0a1536)!important;border:1px solid #2c4778!important;box-shadow:0 14px 35px #0004!important}
+.step h4{color:#fff!important}.step p{color:#b8c7e8!important}.step-number{background:linear-gradient(135deg,#087bff,#9146ff)!important;box-shadow:0 0 20px #087bff55!important}
+.app-shell{position:relative;isolation:isolate;background:radial-gradient(ellipse at 5% 0%,#087bff24,transparent 32%),radial-gradient(ellipse at 95% 10%,#9146ff1c,transparent 30%),linear-gradient(180deg,#07112f,#050b24)!important}
+.app-shell:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.11;pointer-events:none;background-image:linear-gradient(#6bbcff20 1px,transparent 1px),linear-gradient(90deg,#6bbcff20 1px,transparent 1px);background-size:42px 42px}
+.app-title{color:#fff!important}.app-sub{color:#b8c7e8!important}.back-link{color:#80c9ff!important}
+.guide-main,.side-card,.quiz-panel,.mode-panel{background:linear-gradient(145deg,#101f48f5,#0a1536f5)!important;border:1px solid #2e4d80!important;border-radius:22px!important;box-shadow:0 22px 55px #0006, inset 0 1px #ffffff08!important;color:#eaf2ff!important}
+.guide-main h2,.side-card h3{color:#fff!important}.guide-main .overview,.side-card p{color:#b8c7e8!important}
+.guide-section{background:linear-gradient(145deg,#132751,#0c193b)!important;border:1px solid #2a4776!important;border-radius:17px!important;color:#eaf2ff!important}
+.guide-section h3{color:#8fd7ff!important}.guide-section p,.guide-section li{color:#d0def5!important}
+.guide-section b{color:#c9e9ff!important}.example-box{background:#0c2850!important;border:1px solid #2d72ae!important;color:#e5f4ff!important}
+.example-box p,.example-box li{color:#d0def5!important}.brain-box{background:linear-gradient(120deg,#30244d,#1d1a3d)!important;border:1px solid #9b6bda!important;border-left:4px solid #d946ef!important;color:#f2e8ff!important}
+.brain-box b{color:#e5b7ff!important}.side-stat{border-color:#29416f!important;color:#b8c7e8!important}.side-stat strong{color:#fff!important}
+.quiz-choices{gap:15px!important}.mode-panel h2{color:#fff!important}.mode-panel p{color:#b8c7e8!important}
+.mode-choice{background:linear-gradient(145deg,#132751,#0b1737)!important;border:1px solid #2f4e80!important;border-radius:18px!important;box-shadow:0 12px 28px #0004!important}
+.mode-choice h3{color:#fff!important}.mode-choice p{color:#b8c7e8!important}.mode-choice .mode-icon{background:linear-gradient(135deg,#087bff,#9146ff)!important;color:#fff!important;box-shadow:0 0 22px #087bff35!important}
+.mode-choice:hover{border-color:#00d9ff!important;box-shadow:0 18px 38px #087bff20!important}
+.mode-choice.featured{background:radial-gradient(circle at 95% 0,#9146ff3a,transparent 45%),linear-gradient(145deg,#132751,#0b1737)!important;border-color:#7b60bd!important}
+.quiz-label{color:#8fd7ff!important}.quiz-count{color:#b8c7e8!important}.progress{background:#1c3158!important}.progress>span{background:linear-gradient(90deg,#087bff,#00d9ff,#9146ff)!important;box-shadow:0 0 15px #00d9ff66!important}
+.question-topic{background:#112d5b!important;color:#8fd7ff!important;border:1px solid #315e94!important}
+.question-context{background:#0c2045!important;border-left-color:#00d9ff!important;color:#c1d5f1!important}
+.question-text{color:#fff!important}.answer-option{background:#0d1d40!important;border-color:#2d4775!important;color:#dceaff!important}
+.answer-option:hover,.answer-option.selected{background:#102b58!important;border-color:#00bfff!important;color:#fff!important;box-shadow:0 0 0 2px #00bfff20!important}
+.option-letter{background:#1c3766!important;color:#bde7ff!important}.selected .option-letter{background:linear-gradient(135deg,#087bff,#00bfe9)!important}
+.text-button{color:#9bdcff!important}.text-button.active{background:#34294e!important;color:#ffd36e!important}
+.explanation-panel{border-color:#315d91!important;background:#0c1b3b!important}.explanation-head{background:#102b56!important;color:#9bdcff!important}
+.explanation-content{color:#d0def5!important}.explanation-content strong{color:#fff!important}.explanation-example{background:#102750!important}
+.review-dot{background:#1b3158!important;color:#c2d4ef!important}.review-dot.current{background:linear-gradient(135deg,#087bff,#00bfe9)!important}.review-dot.done{background:#124a48!important;color:#76f0c1!important}
+.results-hero{border:1px solid #3a73b5!important;background:radial-gradient(ellipse at 88% 0%,#00d9ff42,transparent 35%),radial-gradient(ellipse at 70% 100%,#9146ff35,transparent 42%),linear-gradient(115deg,#071638,#0b3478 65%,#075b9c)!important;box-shadow:0 22px 55px #0007!important}
+.result-metric-label{color:#a8dfff!important}.result-metric-value{color:#fff!important;text-shadow:0 0 25px #36bfff35!important}
+.results-message{color:#c5d9f5!important}.result-item{background:linear-gradient(145deg,#132751,#0b1737)!important;border-color:#2e4b7b!important;color:#eaf2ff!important}
+.result-item h4{color:#fff!important}.result-item p{color:#c1d2ec!important}.correct-text{color:#42e3ad!important}.wrong-text{color:#ff8296!important}
+.footer{background:radial-gradient(ellipse at 85% 0%,#163e83,transparent 40%),#030817!important;border-top:1px solid #29416f!important;color:#dceaff!important}
+.footer-brand{color:#fff!important}.footer p,.footer-tag{color:#aebfe0!important}
+.loading-card{background:linear-gradient(145deg,#12244c,#081431)!important;border:1px solid #3b6096!important;color:#fff!important;box-shadow:0 30px 90px #000b!important}
+.loading-card h3{color:#fff!important}.loading-card p{color:#b8c7e8!important}
+.spinner-mark{background:#102653!important;border-color:#38649a!important}
+.toast{background:#12254b!important;border:1px solid #3a6395!important;color:#fff!important}
+.api-notice{background:#332b19!important;border-color:#826a31!important;color:#ffe2a0!important}.api-notice.connected{background:#10372f!important;border-color:#267e65!important;color:#9af0cf!important}
+@media(max-width:900px){.hero{padding-top:45px!important}.hero-grid{gap:28px!important}.hero-scene{min-height:390px!important}.guide-layout{grid-template-columns:1fr!important}}
+@media(max-width:620px){
+ .topbar{height:auto!important;min-height:66px!important;padding:10px 14px!important}.brand{font-size:16px!important}.brand-symbol{width:35px!important;height:35px!important}
+ .navlinks{gap:8px!important}.navlinks a:not(.nav-cta){display:none!important}.nav-cta{padding:10px 12px!important;font-size:11px!important}
+ .container{width:calc(100% - 28px)!important}.hero{padding:38px 0 35px!important}.hero h1{font-size:42px!important}
+ .hero-scene{min-height:320px!important;transform:scale(.92);transform-origin:top center;margin-bottom:-20px}
+ .hero-lower-grid{grid-template-columns:1fr!important}.upload-card{padding:17px!important}.section{padding:55px 0!important}
+ .feature-grid,.how-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}.feature{padding:15px!important}
+ .app-shell{padding:25px 0 48px!important}.quiz-choices{grid-template-columns:1fr!important}.mode-choice.featured{grid-column:auto!important}
+ .results-hero{padding:18px!important}.results-metrics{gap:20px!important}.result-metric-value{font-size:36px!important}
+}
+@media(prefers-reduced-motion:no-preference){
+ .feature,.mode-choice,.btn,.answer-option{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease!important}
+ .scene-particle{animation:sg-float 6s ease-in-out infinite alternate}
+ .scene-particle.particle-b{animation-delay:1.5s}.scene-particle.particle-c{animation-delay:3s}
+}
+@keyframes sg-float{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-12px,0)}}
+
 </style>
 </head>
 <body>
@@ -449,7 +564,7 @@ body{font-feature-settings:"ss01" on,"cv11" on;letter-spacing:-.12px}
       <span>Students<em>GUIDE</em>.com</span>
     </a>
     <nav class="navlinks">
-      <a href="#features">Features</a><a href="#how">How it works</a><a href="#modes">Quiz modes</a>
+      <a href="#home">Home</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#features">Study resources</a><a href="#modes">Quiz modes</a>
       <a href="#upload" class="nav-cta">Start learning <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
@@ -462,7 +577,7 @@ body{font-feature-settings:"ss01" on,"cv11" on;letter-spacing:-.12px}
           <div class="hero-copy-column">
             <div class="eyebrow"><span class="dot"></span> YOUR AI-POWERED STUDY COMPANION</div>
             <h1>Struggles less.<br><span>Study smart.</span></h1>
-            <p class="hero-copy">Turn your lecture slides into a clear study guide, memorable examples, practical brainhacks and an interactive quiz, all in one learning workspace.</p>
+            <p class="hero-copy">Turn your lecture slides into clear study guides, simplified explanations, real examples, brainhacks, and interactive quizzes, all in one intelligent learning platform.</p>
             <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()"><span class="cta-upload-icon">↑</span> Create my study guide <span>✦</span></button></div>
             <div class="hero-benefits"><span><b>✦</b> Save time</span><span><b>◎</b> Understand faster</span><span><b>▥</b> Be exam-ready</span></div>
           </div>
