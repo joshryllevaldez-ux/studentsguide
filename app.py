@@ -534,7 +534,8 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     styles.add(ParagraphStyle(name="SGLabel", parent=styles["BodyText"], fontName="Helvetica-Bold", fontSize=8, leading=10, textColor=navy, spaceAfter=3))
 
     def P(value: Any, style: str = "SGBody") -> Paragraph:
-        return Paragraph(html.escape(str(value or "")).replace("\n", "<br/>"), styles[style])
+        escaped = html.escape(str(value or "")).replace("&lt;br/&gt;", "<br/>").replace("\n", "<br/>")
+        return Paragraph(escaped, styles[style])
 
     def bullets(items: Any, style: str = "SGSmall") -> list[Any]:
         return [P("•  " + str(item), style) for item in (items or [])]
@@ -626,7 +627,7 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
             block.append(panel("Quick self-check", check["question"] + ("<br/><b>Answer:</b> " + str(check.get("answer","")) if check.get("answer") else ""), bg=sky, accent=blue))
         if section.get("exam_focus"):
             block.extend([P("EXAM FOCUS", "SGH2"), *bullets(section["exam_focus"])])
-        story.append(KeepTogether(block))
+        story.extend(block)
 
     for heading, key in [("QUICK RECAP", "quick_recap"), ("EXAM SMART: REVISION TIPS", "exam_tips")]:
         values = guide.get(key) or []
