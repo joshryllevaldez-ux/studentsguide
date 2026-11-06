@@ -125,6 +125,70 @@ body{background:#f7f9fd;color:#132746}
 .feature h3,.feature p{position:relative;z-index:1}
 @media(max-width:620px){.upload-illustration{width:105px;height:90px;right:7px;top:55px;opacity:.48}.upload-card .card-head{padding-right:75px}.upload-card{min-height:0}}
 
+
+/* Illustrated learning-workspace homepage inspired by the supplied reference */
+.topbar{position:sticky;top:10px;width:min(1480px,calc(100% - 48px));height:68px;margin:10px auto -88px;border:1px solid rgba(255,255,255,.82);border-radius:20px;background:rgba(255,255,255,.88);box-shadow:0 12px 38px rgba(20,65,130,.12);backdrop-filter:blur(18px);padding:0 clamp(18px,3vw,42px)}
+.topbar .brand{font-size:20px}.navlinks{gap:clamp(13px,2vw,28px)}.navlinks a{font-size:12px}.navlinks a:first-child{background:#1768e8;color:#fff;padding:10px 17px;border-radius:99px;box-shadow:0 5px 13px #1768e833}
+.hero{padding:125px 0 38px;min-height:0;overflow:hidden;position:relative;background:radial-gradient(ellipse at 75% 15%,#d7edff 0,transparent 36%),radial-gradient(ellipse at 12% 65%,#e5efff 0,transparent 42%),linear-gradient(135deg,#f5f9ff,#eaf4ff 58%,#f9fbff)}
+.hero:before{background-image:linear-gradient(#5c92d00b 1px,transparent 1px),linear-gradient(90deg,#5c92d00b 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(90deg,transparent,black 40%,transparent)}
+.hero:after{right:-90px;bottom:30px;width:470px;height:470px;border-color:#7caee51c;box-shadow:0 0 0 34px #7caee50b,0 0 0 70px #7caee507}
+.sg-hero-grid{grid-template-columns:.86fr 1.14fr;gap:24px;max-width:1320px;min-height:425px;align-items:center}
+.hero-copy-column{padding:25px 0 22px 2px;position:relative;z-index:2}
+.hero-copy-column .eyebrow{font-size:11px;padding:10px 16px;border:1.5px solid #8db9f4;box-shadow:0 5px 16px #2865a51a;color:#123d87}
+.hero-copy-column .eyebrow .dot{background:#ffbd22;box-shadow:0 0 0 4px #ffbd2228}
+.hero h1{font-size:clamp(48px,5.4vw,76px);letter-spacing:-3.8px;line-height:.99;margin:20px 0 18px;color:#0d2457}
+.hero h1 span{background:linear-gradient(95deg,#075ce4,#248cf5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy{font-size:16px;line-height:1.55;max-width:530px;color:#193967;margin-bottom:22px}
+.hero-actions .btn{font-size:16px;padding:15px 24px;border-radius:99px}
+.cta-upload-icon{font-size:23px;font-weight:500;line-height:1}
+.hero-benefits{display:flex;gap:10px;flex-wrap:wrap;margin-top:19px}
+.hero-benefits span{display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border-radius:99px;background:#ffffffc9;border:1px solid #d9e8fb;color:#16346e;font-size:11px;font-weight:800;box-shadow:0 5px 13px #1d4e8b0b}
+.hero-benefits b{font-size:16px;color:#f2ad08}
+.hero-scene{height:430px;position:relative;isolation:isolate;min-width:0}
+.scene-glow{position:absolute;inset:5% 3% 0 2%;border-radius:48%;background:radial-gradient(ellipse,#d1e9ff 0,#e5f2ff 48%,transparent 72%);filter:blur(3px);z-index:-2}
+.scene-desk{position:absolute;bottom:16px;left:0;right:0;height:85px;background:linear-gradient(180deg,#f4c99c,#e8a86e);border-radius:50% 50% 12px 12px;transform:perspective(400px) rotateX(9deg);box-shadow:0 17px 24px #5577a52b;z-index:-1}
+.book-stack{position:absolute;left:3%;bottom:75px;width:43%;z-index:3;transform:rotate(-1deg)}
+.book{height:58px;margin-top:3px;border-radius:9px 13px 13px 8px;display:flex;align-items:center;gap:12px;padding:0 18px;color:#fff;font-size:clamp(15px,1.55vw,21px);font-weight:900;box-shadow:0 8px 10px #193a7028,inset 0 -5px 0 #00000012;border:1px solid #ffffff55;position:relative}
+.book:before{content:"";position:absolute;left:12px;top:0;bottom:0;width:5px;background:#ffffff65;border-radius:5px}
+.book-blue{background:linear-gradient(100deg,#1550bc,#2385ed)}.book-orange{background:linear-gradient(100deg,#ed8b25,#ffb23d)}.book-purple{background:linear-gradient(100deg,#8536c9,#b76be9)}.book-cyan{background:linear-gradient(100deg,#008cce,#27b4e5)}
+.book-icon{font-size:25px;text-shadow:0 2px 3px #123}
+.scene-laptop{position:absolute;right:1%;bottom:69px;width:59%;height:270px;z-index:2;transform:rotate(2deg)}
+.laptop-screen{position:absolute;inset:0 0 28px;border:10px solid #17366f;border-bottom-width:14px;border-radius:19px;background:linear-gradient(145deg,#d7f1ff,#fff 70%);box-shadow:0 14px 28px #143f772d;padding:38px 14px 12px;text-align:center;overflow:hidden}
+.laptop-screen:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 90% 10%,#bde5ff 0,transparent 35%),linear-gradient(135deg,transparent 60%,#e5f2ff 60%);z-index:0}
+.screen-brand,.screen-tagline,.screen-lines,.screen-chart{position:relative;z-index:1}
+.screen-brand{font-family:Manrope,sans-serif;color:#0e2d72;font-size:clamp(18px,2vw,27px);font-weight:900;letter-spacing:-1px}.screen-brand span:first-child{color:#f3b21c}.screen-brand span:nth-child(2){color:#0876ec}.screen-brand small{font-size:12px}
+.screen-tagline{font-size:11px;color:#16458e;font-weight:800;margin-top:5px}
+.screen-lines{display:flex;flex-direction:column;gap:5px;width:54%;margin:18px auto 0}.screen-lines i{height:5px;border-radius:5px;background:#b8d8fa}.screen-lines i:nth-child(2){width:75%}.screen-lines i:nth-child(3){width:88%}
+.screen-chart{display:flex;align-items:end;justify-content:center;gap:8px;height:47px;margin-top:10px}.screen-chart b{width:13px;border-radius:4px 4px 0 0;background:linear-gradient(#42a5ff,#1767d8);height:40%}.screen-chart b:nth-child(2){height:75%}.screen-chart b:nth-child(3){height:56%}.screen-chart b:nth-child(4){height:95%}
+.laptop-base{position:absolute;bottom:0;left:-7%;width:114%;height:29px;background:linear-gradient(#d9e3ef,#8299b8);clip-path:polygon(7% 0,93% 0,100% 75%,0 75%);border-radius:0 0 18px 18px;filter:drop-shadow(0 8px 5px #244c7929)}
+.scene-cap{position:absolute;top:-3px;left:32%;width:112px;z-index:4;filter:drop-shadow(0 7px 6px #244c7940);transform:rotate(-4deg)}
+.scene-cap svg{width:100%}
+.scene-plant{position:absolute;right:0;top:28px;width:76px;height:155px;z-index:1;opacity:.8}
+.scene-plant:before{content:"";position:absolute;bottom:0;left:34px;width:10px;height:90px;background:#47966b;border-radius:10px}
+.scene-plant span,.scene-plant i,.scene-plant b{position:absolute;width:58px;height:28px;background:linear-gradient(120deg,#72c88d,#278b65);border-radius:100% 0 100% 0;transform:rotate(-28deg);top:30px;left:3px}
+.scene-plant i{top:55px;left:28px;transform:rotate(28deg) scaleX(-1)}.scene-plant b{top:5px;left:23px;transform:rotate(-8deg)}
+.scene-spark{position:absolute;color:#f5b500;font-size:38px;z-index:4}.spark-one{top:20px;left:47%}.spark-two{right:9%;top:6px;font-size:28px}
+.scene-note{position:absolute;z-index:5;right:4%;bottom:28px;display:flex;flex-direction:column;gap:5px;padding:12px 15px;background:#fff7dc;border:1px solid #f0d58a;box-shadow:0 8px 18px #805b1b30;transform:rotate(5deg);font-size:11px;color:#1d3157}.scene-note strong{color:#bc8000}
+.hero-lower-grid{display:grid;grid-template-columns:1.55fr .95fr;gap:20px;align-items:stretch;max-width:1320px;margin:18px auto 0}
+.how-panel{background:rgba(255,255,255,.84);backdrop-filter:blur(14px);border:1px solid #dbe8f8;border-radius:22px;padding:23px 25px;box-shadow:0 15px 35px #1d4d8915;display:grid;grid-template-columns:1.05fr 1fr auto 1fr auto 1fr;gap:12px;align-items:center}
+.how-intro h2{font-family:Manrope,sans-serif;font-size:19px;line-height:1.2;color:#0d285f;margin:8px 0}.how-intro p{font-size:11px;line-height:1.5;color:#71819a;margin:0}
+.how-step{text-align:center;min-width:0}.how-step-icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;margin:0 auto 9px;font-size:24px;font-weight:900;background:#eaf3ff;color:#1768e8;box-shadow:0 5px 15px #1b65b21a}.ai-icon{background:#f2eaff;color:#8848d5}.quiz-icon{background:#e4f8f1;color:#0c9c70}
+.how-step b{display:block;font-size:11px;color:#142e66}.how-step small{display:block;font-size:9px;line-height:1.4;color:#73839b;margin-top:4px}.how-arrow{font-size:22px;color:#4b77ba}
+.upload-card{border:1px solid #a9d9fa;border-radius:23px;padding:18px;background:linear-gradient(150deg,#fff,#f3f9ff);box-shadow:0 15px 35px #1a67a52b,0 0 0 5px #49b9ed19;min-height:0;overflow:hidden}
+.upload-card:before{content:"";position:absolute;left:0;right:0;top:0;height:49px;background:linear-gradient(105deg,#09aeea,#0876ee 58%,#1452c7);border-radius:22px 22px 0 0;z-index:0}
+.upload-card:after{display:none}.upload-illustration{display:none}
+.upload-card .upload-card-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;margin-bottom:15px}
+.upload-card .card-title{font-size:15px;color:#fff}.upload-card .small-pill{font-size:8px;background:#fff;color:#1558b8}
+.upload-card .dropzone{min-height:150px;border:1.5px dashed #94bdf0;border-radius:16px;background:linear-gradient(145deg,#f9fcff,#eff6ff);padding:17px 10px}
+.upload-card .upload-icon{width:43px;height:43px;margin-bottom:7px;background:#e4f2ff}.upload-card .upload-icon svg{width:24px;height:24px}
+.upload-card .dropzone strong{font-size:12px}.upload-card .dropzone p{margin:5px 0 9px}.upload-card .full{margin-top:10px;border-radius:99px;padding:13px;font-size:13px}
+.upload-card .status-line{font-size:9px;margin-top:8px}.upload-card .privacy-note{font-size:8px;margin-top:7px}
+.section{background:#f8fbff}
+.feature-grid{gap:13px}.feature{border-radius:19px;box-shadow:0 12px 28px #244b8010}
+@media(max-width:1050px){.sg-hero-grid{grid-template-columns:1fr 1fr}.hero-lower-grid{grid-template-columns:1fr}.how-panel{grid-template-columns:1fr 1fr auto 1fr auto 1fr}}
+@media(max-width:760px){.topbar{width:calc(100% - 20px);margin:8px auto -76px;height:60px;padding:0 13px;border-radius:15px}.topbar .brand{font-size:16px}.navlinks{gap:8px}.navlinks a:not(.nav-cta){display:none}.nav-cta{font-size:10px!important;padding:9px 11px!important}.hero{padding:108px 0 28px}.sg-hero-grid{grid-template-columns:1fr;gap:5px}.hero-copy-column{padding:20px 0 5px}.hero h1{font-size:clamp(45px,11vw,64px)}.hero-copy{font-size:14px}.hero-scene{height:310px;margin:0 -5px}.book-stack{bottom:56px;width:43%}.book{height:44px;font-size:14px;padding:0 10px;gap:7px}.book-icon{font-size:19px}.scene-laptop{height:205px;width:58%;bottom:56px}.laptop-screen{border-width:7px;border-bottom-width:10px;padding-top:28px}.scene-cap{width:80px;left:31%}.scene-plant{transform:scale(.7);transform-origin:top right}.scene-note{font-size:8px;padding:8px 9px;bottom:17px}.hero-lower-grid{margin-top:12px}.how-panel{grid-template-columns:1fr 1fr;gap:15px;padding:17px}.how-intro{grid-column:1/-1}.how-arrow{display:none}.how-step-icon{width:43px;height:43px}.upload-card{padding:15px}.upload-card:before{height:44px}.upload-card .card-title{font-size:13px}.upload-card .dropzone{min-height:145px}.hero-benefits{gap:6px}.hero-benefits span{padding:8px 10px;font-size:9px}}
+@media(max-width:420px){.hero-actions .btn{font-size:13px;padding:13px 16px}.hero-benefits span{font-size:8px}.scene-laptop{width:61%;right:-2%}.book-stack{left:0;width:45%}.scene-note{right:1%}}
+
 </style>
 </head>
 <body>
@@ -141,40 +205,51 @@ body{background:#f7f9fd;color:#132746}
 
   <main id="homeView">
     <section class="hero" id="home">
+      <div class="hero-orbit hero-orbit-one"></div><div class="hero-orbit hero-orbit-two"></div>
       <div class="container">
-        <div class="hero-kicker-row"><span class="hero-kicker">AI-POWERED LEARNING WORKSPACE</span><span class="hero-edition">BUILT FOR THE WAY STUDENTS LEARN</span></div>
-        <div class="hero-grid">
-          <div>
-            <div class="eyebrow"><span class="dot"></span> Your AI-powered study companion</div>
+        <div class="hero-grid sg-hero-grid">
+          <div class="hero-copy-column">
+            <div class="eyebrow"><span class="dot"></span> YOUR AI-POWERED STUDY COMPANION</div>
             <h1>Struggles less.<br><span>Study smart.</span></h1>
-            <p class="hero-copy">Turn your lecture PowerPoint into a clear study guide, memorable examples, practical brain hacks and an interactive quiz — all in one learning workspace.</p>
-            <div class="hero-checks"><span><b class="tick">✓</b> Lecture-based materials</span><span><b class="tick">✓</b> Downloadable PDF</span><span><b class="tick">✓</b> Five quiz modes</span></div>
-            <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()">Upload a lecture <span>↗</span></button><button class="btn btn-light" onclick="loadSamplePreview()">Explore sample experience</button></div><div class="hero-workflow" aria-label="How StudentsGUIDE works"><div class="workflow-heading"><span>YOUR LECTURE, REIMAGINED</span><i>01 — 03</i></div><div class="workflow-steps"><div class="workflow-step"><span class="workflow-icon ppt-symbol">P</span><b>Upload slides</b><small>Your lecture, in</small></div><span class="workflow-arrow">→</span><div class="workflow-step"><span class="workflow-icon guide-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5c3.2-1.2 5.8-.7 8 1.3v13c-2.2-2-4.8-2.5-8-1.3zM20 5.5c-3.2-1.2-5.8-.7-8 1.3v13c2.2-2 4.8-2.5 8-1.3z"/></svg></span><b>Understand more</b><small>Examples + brainhacks</small></div><span class="workflow-arrow">→</span><div class="workflow-step"><span class="workflow-icon quiz-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3.5h10A2.5 2.5 0 0 1 19.5 6v15H4.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="m8 11 2.2 2.2L16 7.5M8 17h8"/></svg></span><b>Test yourself</b><small>Practice at your pace</small></div></div></div>
+            <p class="hero-copy">Turn your lecture slides into a clear study guide, memorable examples, practical brainhacks and an interactive quiz, all in one learning workspace.</p>
+            <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()"><span class="cta-upload-icon">↑</span> Create my study guide <span>✦</span></button></div>
+            <div class="hero-benefits"><span><b>✦</b> Save time</span><span><b>◎</b> Understand faster</span><span><b>▥</b> Be exam-ready</span></div>
+          </div>
+          <div class="hero-scene" aria-label="Illustration of study books and a laptop displaying StudentsGUIDE">
+            <div class="scene-glow"></div>
+            <div class="scene-spark spark-one">✳</div><div class="scene-spark spark-two">✦</div>
+            <div class="scene-plant"><span></span><i></i><b></b></div>
+            <div class="book-stack">
+              <div class="book book-blue"><span class="book-icon">▤</span><b>Study Guide</b></div>
+              <div class="book book-orange"><span class="book-icon">✧</span><b>Examples</b></div>
+              <div class="book book-purple"><span class="book-icon">❋</span><b>Brainhacks</b></div>
+              <div class="book book-cyan"><span class="book-icon">☑</span><b>Practice Quiz</b></div>
+            </div>
+            <div class="scene-cap"><svg viewBox="0 0 120 75" aria-hidden="true"><path d="M8 29 60 4l52 25-52 24L8 29Z" fill="#123b9b" stroke="#082b79" stroke-width="3"/><path d="M29 41v18c18 13 44 13 62 0V41L60 55 29 41Z" fill="#fff" stroke="#174cba" stroke-width="3"/><path d="M60 29v25" stroke="#f5bf2e" stroke-width="4"/><path d="M60 51c-7 8-6 14-2 20h8c4-6 5-12-2-20" fill="#f7bf29"/></svg></div>
+            <div class="scene-laptop">
+              <div class="laptop-screen"><div class="screen-brand"><span>✦</span> Students<span>GUIDE</span><small>.com</small></div><div class="screen-tagline">Struggles less, study smart.</div><div class="screen-lines"><i></i><i></i><i></i></div><div class="screen-chart"><b></b><b></b><b></b><b></b></div></div>
+              <div class="laptop-base"></div>
+            </div>
+            <div class="scene-note"><b>✓ Study</b><b>✓ Review</b><b>✓ Practice</b><strong>✓ Succeed!</strong></div>
+            <div class="scene-desk"></div>
+          </div>
+        </div>
+        <div class="hero-lower-grid">
+          <div class="how-panel" id="how">
+            <div class="how-intro"><span class="section-kicker">HOW IT WORKS</span><h2>From slides to study success.</h2><p>Three simple steps to make your lecture easier to understand.</p></div>
+            <div class="how-step"><div class="how-step-icon cloud-icon">↑</div><b>1. Upload slides</b><small>Drag and drop your PowerPoint.</small></div>
+            <span class="how-arrow">→</span>
+            <div class="how-step"><div class="how-step-icon ai-icon">AI</div><b>2. AI generates</b><small>Get explanations, examples and brainhacks.</small></div>
+            <span class="how-arrow">→</span>
+            <div class="how-step"><div class="how-step-icon quiz-icon">☑</div><b>3. Practice & learn</b><small>Test yourself with interactive quizzes.</small></div>
           </div>
           <div class="upload-card" id="upload">
-            <div class="card-head"><div class="card-title">Create your study guide</div><span class="small-pill">POWERPOINT TO PDF</span></div><div class="upload-illustration" aria-hidden="true">
-  <svg viewBox="0 0 260 190" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="150" cy="91" r="73" stroke="#B7D3F8" stroke-width="1.2" stroke-dasharray="4 6"/>
-    <circle cx="150" cy="91" r="52" fill="#F0F6FF" stroke="#D6E6FA"/>
-    <path d="M90 78c18-10 37-9 58 4v55c-21-13-40-14-58-4V78Z" fill="#fff" stroke="#397ED8" stroke-width="2"/>
-    <path d="M206 78c-18-10-37-9-58 4v55c21-13 40-14 58-4V78Z" fill="#E7F1FF" stroke="#397ED8" stroke-width="2"/>
-    <path d="M150 82v55" stroke="#397ED8" stroke-width="2"/>
-    <path d="M102 91c11-4 22-3 33 2M102 103c11-4 22-3 33 2M168 93c11-5 22-5 33-1M168 105c11-5 22-5 33-1" stroke="#8BB6EB" stroke-width="2" stroke-linecap="round"/>
-    <path d="m150 23 8 14 16 3-12 11 3 16-15-8-15 8 3-16-12-11 16-3 8-14Z" fill="#F7C95B" stroke="#E4AF32"/>
-    <circle cx="66" cy="48" r="7" fill="#E6F1FF" stroke="#7FADE8"/>
-    <circle cx="225" cy="137" r="6" fill="#DFF3EB" stroke="#58A988"/>
-    <path d="M66 55v21h18M219 137h-18v-18" stroke="#9ABDE9" stroke-width="1.5" stroke-linecap="round"/>
-    <rect x="30" y="116" width="47" height="34" rx="7" fill="#F4F8FE" stroke="#BDD4F1"/>
-    <path d="M39 139v-9m9 9v-15m9 15v-11" stroke="#4386D9" stroke-width="3" stroke-linecap="round"/>
-    <rect x="202" y="28" width="34" height="25" rx="6" fill="#F2F7FF" stroke="#C6D9F2"/>
-    <path d="M210 44v-6m7 6V33m7 11v-8" stroke="#4C8DDD" stroke-width="2.5" stroke-linecap="round"/>
-  </svg>
-</div>
+            <div class="upload-card-top"><div class="card-title">Create your study guide</div><span class="small-pill">POWERPOINT (PPTX) → PDF</span></div>
             <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop a PowerPoint file">
               <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
               <strong>Drag & drop your lecture slides here</strong>
               <p>or <span class="browse" id="browseLink">browse files</span></p>
-              <span class="small-pill">PowerPoint .PPTX · Max 50 MB</span>
+              <span class="small-pill">PowerPoint (.PPTX) · Max 50 MB</span>
             </div>
             <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
             <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
@@ -186,7 +261,6 @@ body{background:#f7f9fd;color:#132746}
         </div>
       </div>
     </section>
-
     <section class="section" id="features">
       <div class="container">
         <div class="section-head"><div class="section-kicker">Everything in one place</div><h2>From lecture slides to learning confidence</h2><p>StudentsGUIDE organizes revision into clear explanations, practical examples and focused self-assessment.</p></div>
