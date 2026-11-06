@@ -59,7 +59,7 @@
               <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
               <strong>Drag & drop your lecture slides here</strong>
               <p>or <span class="browse" id="browseLink">browse files</span></p>
-              <span class="small-pill">PowerPoint .PPTX · Max 20 MB</span>
+              <span class="small-pill">PowerPoint .PPTX · Max 50 MB</span>
             </div>
             <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
             <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
@@ -177,7 +177,7 @@
     function setFile(file){
       if(!file)return;
       if(!file.name.toLowerCase().endsWith('.pptx')){toast('Please choose a PowerPoint .pptx file.');return;}
-      if(file.size>20*1024*1024){toast('This file is larger than 20 MB. Choose a smaller PowerPoint.');return;}
+      if(file.size>50*1024*1024){toast('This file is larger than 50 MB. Choose a smaller PowerPoint.');return;}
       selectedFile=file;$('fileName').textContent=file.name;$('fileSize').textContent=formatSize(file.size);$('fileLine').classList.remove('hidden');$('generateBtn').disabled=false;
     }
     $('pptInput').addEventListener('change',e=>setFile(e.target.files[0]));
