@@ -1,0 +1,11 @@
+StudentsGUIDE Render Dockerfile fix
+
+The Render build error says: open Dockerfile: no such file or directory.
+
+1. Extract this ZIP on your computer.
+2. Open the extracted folder.
+3. Upload the Dockerfile, app.py, requirements.txt, static folder, and assets folder DIRECTLY into the ROOT of the GitHub repository studentsguide, on the main branch.
+4. Do not upload this ZIP file itself. GitHub does not unpack ZIP files automatically.
+5. Keep the existing render.yaml at the repository root. Do not put these files inside a new StudentsGUIDE subfolder.
+6. Confirm the GitHub root shows: Dockerfile, app.py, requirements.txt, render.yaml, static/, assets/.
+7. Render should auto-deploy after the GitHub commit.

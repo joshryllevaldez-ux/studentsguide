@@ -1,16 +1,23 @@
 from __future__ import annotations
 
+import asyncio
+import base64
 import html
 import io
 import json
 import os
 import re
+import secrets
+import threading
+import time
+from collections import defaultdict, deque
+from datetime import datetime, timezone
 from typing import Any
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pptx import Presentation
@@ -34,19 +41,101 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 ASSET_DIR = os.path.join(BASE_DIR, "assets")
-MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+MAX_UPLOAD_MB = max(1, int(os.getenv("MAX_UPLOAD_MB", "20")))
+MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 MAX_SOURCE_CHARS = 55_000
+MAX_REQUEST_BYTES = (MAX_UPLOAD_MB + 2) * 1024 * 1024
+APP_ACCESS_PASSWORD = os.getenv("APP_ACCESS_PASSWORD", "").strip()
+IP_AI_GENERATION_LIMIT_PER_HOUR = int(os.getenv("IP_AI_GENERATION_LIMIT_PER_HOUR", "25"))
+DAILY_AI_GENERATION_LIMIT = int(os.getenv("DAILY_AI_GENERATION_LIMIT", "100"))
+AI_CONCURRENCY_LIMIT = max(1, int(os.getenv("AI_CONCURRENCY_LIMIT", "3")))
+_AI_SEMAPHORE = asyncio.Semaphore(AI_CONCURRENCY_LIMIT)
+_AI_LIMIT_LOCK = threading.Lock()
+_AI_REQUESTS_BY_IP: dict[str, deque[float]] = defaultdict(deque)
+_AI_DAILY_DATE = datetime.now(timezone.utc).date()
+_AI_DAILY_COUNT = 0
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 if OPENAI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
     OPENAI_API_KEY = ""
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-6.1-terra").strip()
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 PROMPT_VERSION = "0.2"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
+
+
+def _basic_auth_is_valid(header: str | None) -> bool:
+    """Validate the optional shared classroom password without storing credentials."""
+    if not APP_ACCESS_PASSWORD:
+        return True
+    if not header or not header.lower().startswith("basic "):
+        return False
+    try:
+        decoded = base64.b64decode(header.split(None, 1)[1], validate=True).decode("utf-8")
+        _username, separator, supplied_password = decoded.partition(":")
+        return bool(separator) and secrets.compare_digest(supplied_password, APP_ACCESS_PASSWORD)
+    except (ValueError, UnicodeDecodeError, IndexError):
+        return False
+
+
+@app.middleware("http")
+async def shared_access_and_security_headers(request: Request, call_next):
+    # Optional shared class password. Configure APP_ACCESS_PASSWORD in the hosting dashboard.
+    if request.url.path != "/api/status" and not _basic_auth_is_valid(request.headers.get("authorization")):
+        return PlainTextResponse(
+            "StudentsGUIDE class access is restricted. Enter the class access password in the browser prompt.",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="StudentsGUIDE Classroom", charset="UTF-8"'},
+        )
+
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_BYTES:
+                return PlainTextResponse("Request is too large.", status_code=413)
+        except ValueError:
+            return PlainTextResponse("Invalid request size header.", status_code=400)
+
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    return response
+
+
+def enforce_ai_generation_quota(request: Request) -> None:
+    """Small single-instance abuse guard for a shared classroom demo deployment."""
+    global _AI_DAILY_DATE, _AI_DAILY_COUNT
+    now = time.time()
+    today = datetime.now(timezone.utc).date()
+    # Uvicorn's proxy-header support supplies the original client address on Render.
+    client_ip = request.client.host if request.client else "unknown"
+    with _AI_LIMIT_LOCK:
+        if today != _AI_DAILY_DATE:
+            _AI_DAILY_DATE = today
+            _AI_DAILY_COUNT = 0
+            _AI_REQUESTS_BY_IP.clear()
+        requests = _AI_REQUESTS_BY_IP[client_ip]
+        while requests and now - requests[0] >= 3600:
+            requests.popleft()
+        if len(requests) >= IP_AI_GENERATION_LIMIT_PER_HOUR:
+            raise HTTPException(
+                status_code=429,
+                detail="This network has reached its hourly StudentsGUIDE AI limit. Please try again later.",
+                headers={"Retry-After": "3600"},
+            )
+        if _AI_DAILY_COUNT >= DAILY_AI_GENERATION_LIMIT:
+            raise HTTPException(
+                status_code=429,
+                detail="The shared StudentsGUIDE daily AI allowance has been reached. Please try again tomorrow.",
+                headers={"Retry-After": "3600"},
+            )
+        requests.append(now)
+        _AI_DAILY_COUNT += 1
 
 
 class QuizRequest(BaseModel):
@@ -136,8 +225,9 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
     }
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"}
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as client:
-            response = await client.post(f"{OPENAI_BASE_URL}/responses", headers=headers, json=body)
+        async with _AI_SEMAPHORE:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as client:
+                response = await client.post(f"{OPENAI_BASE_URL}/responses", headers=headers, json=body)
     except httpx.TimeoutException as exc:
         raise HTTPException(status_code=504, detail="The AI service took too long to respond. Try a smaller PowerPoint or try again.") from exc
     except httpx.HTTPError as exc:
@@ -199,13 +289,19 @@ async def status() -> dict[str, Any]:
         "app_version": APP_VERSION,
         "ai_configured": bool(OPENAI_API_KEY),
         "model": OPENAI_MODEL if OPENAI_API_KEY else None,
-        "max_upload_mb": MAX_UPLOAD_BYTES // (1024 * 1024),
+        "max_upload_mb": MAX_UPLOAD_MB,
         "supported_file": ".pptx",
+        "shared_access_enabled": bool(APP_ACCESS_PASSWORD),
+        "max_ai_generations_per_day": DAILY_AI_GENERATION_LIMIT,
+        "ip_ai_generations_per_hour": IP_AI_GENERATION_LIMIT_PER_HOUR,
     }
 
 
 @app.post("/api/generate-study-guide")
-async def generate_study_guide(file: UploadFile = File(...)) -> dict[str, Any]:
+async def generate_study_guide(request: Request, file: UploadFile = File(...)) -> dict[str, Any]:
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
+    enforce_ai_generation_quota(request)
     filename = file.filename or "lecture.pptx"
     if not filename.lower().endswith(".pptx"):
         raise HTTPException(status_code=400, detail="Please upload a PowerPoint .pptx file.")
@@ -242,15 +338,18 @@ MODE_SPECS = {
 
 
 @app.post("/api/generate-quiz")
-async def generate_quiz(request: QuizRequest) -> dict[str, Any]:
-    mode = request.mode.upper().strip()
+async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any]:
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
+    enforce_ai_generation_quota(request)
+    mode = payload.mode.upper().strip()
     if mode not in MODE_SPECS:
         raise HTTPException(status_code=400, detail="Choose one of the five available quiz modes.")
     count, mix_instruction = MODE_SPECS[mode]
     prompt = (
-        f"Lecture title: {request.lecture_title}\nSelected mode: {mode}\n"
+        f"Lecture title: {payload.lecture_title}\nSelected mode: {mode}\n"
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
-        "LECTURE CONTENT:\n" + request.source_text[:MAX_SOURCE_CHARS]
+        "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
     quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=11000 if count >= 40 else 7500)
     questions = quiz.get("questions")
@@ -310,7 +409,7 @@ async def generate_quiz(request: QuizRequest) -> dict[str, Any]:
         raise HTTPException(status_code=502, detail=f"The AI returned {len(clean)} usable questions instead of {count}. Please try generating again.")
     quiz["questions"] = clean[:count]
     quiz["mode"] = mode
-    quiz["lecture_title"] = request.lecture_title
+    quiz["lecture_title"] = payload.lecture_title
     quiz["generation_type"] = "AI-generated from uploaded lecture"
     quiz["prompt_version"] = PROMPT_VERSION
     return quiz

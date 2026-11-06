@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1245a5" />
+  <meta name="description" content="StudentsGUIDE turns lecture PowerPoints into clear study guides, examples, brain hacks and interactive quizzes." />
+  <title>StudentsGUIDE.com | Struggles less, study smart.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#102d69;--blue:#1264df;--blue2:#2787f5;--sky:#eaf4ff;--ink:#172b4d;--muted:#667894;--gold:#f8bd18;--line:#dce8f7;--paper:#fff;--bg:#f5f9ff;--green:#15865d;--red:#c33b4c;--shadow:0 18px 48px rgba(23,67,134,.11);--radius:22px}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",sans-serif} button,input{font:inherit} button{cursor:pointer} .hidden{display:none!important}
+    .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,5vw,76px);background:#fff;border-bottom:1px solid #e6eef9;position:sticky;top:0;z-index:30}
+    .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--navy);font-family:Manrope,sans-serif;font-weight:900;letter-spacing:-.7px;font-size:21px}.brand-symbol{width:39px;height:39px;border-radius:13px;background:linear-gradient(145deg,#0d368f,#1684f5);display:grid;place-items:center;color:white;box-shadow:0 8px 18px #1459b633}.brand-symbol svg{width:25px;height:25px}.brand span em{color:var(--blue);font-style:normal}.navlinks{display:flex;align-items:center;gap:28px}.navlinks a{font-size:13px;color:#52647f;text-decoration:none;font-weight:700}.navlinks a:hover{color:var(--blue)}.nav-cta{background:var(--blue);color:white!important;padding:12px 18px;border-radius:12px;box-shadow:0 7px 16px #1264df26}
+    .container{width:min(1180px,calc(100% - 40px));margin:0 auto}.hero{padding:36px 0 34px;background:radial-gradient(circle at 85% 16%,#e0f2ff 0,transparent 28%),linear-gradient(180deg,#f8fbff,#eef6ff)}
+    .banner-frame{background:white;border:1px solid #e5eef8;border-radius:25px;padding:10px;box-shadow:0 14px 34px #174a8a14;overflow:hidden;margin-bottom:30px}.banner-frame img{display:block;width:100%;height:auto;max-height:285px;object-fit:contain;border-radius:18px}
+    .hero-grid{display:grid;grid-template-columns:1.04fr .96fr;gap:35px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #cfe2fb;background:#fff;color:#2257a5;border-radius:100px;padding:8px 13px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}.eyebrow .dot{height:7px;width:7px;border-radius:50%;background:#1ab27b;box-shadow:0 0 0 4px #1ab27b20}.hero h1{font-family:Manrope,sans-serif;font-weight:900;letter-spacing:-2.2px;line-height:1.08;font-size:clamp(37px,5.2vw,62px);color:#122e6c;margin:20px 0 15px}.hero h1 span{color:var(--blue)}.hero-copy{max-width:570px;color:#5e718e;font-size:16px;line-height:1.75;margin:0 0 22px}.hero-checks{display:flex;gap:13px;flex-wrap:wrap;margin:21px 0 24px}.hero-checks span{display:inline-flex;align-items:center;gap:6px;color:#536986;font-size:12px;font-weight:700}.tick{color:var(--green);font-weight:900}.hero-actions{display:flex;gap:11px;flex-wrap:wrap}.btn{border:0;border-radius:13px;padding:13px 18px;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:.18s transform,.18s box-shadow,.18s background}.btn:hover{transform:translateY(-2px)}.btn-primary{background:linear-gradient(135deg,#1264df,#2189f3);color:white;box-shadow:0 10px 22px #1264df30}.btn-primary:hover{box-shadow:0 14px 26px #1264df42}.btn-light{background:white;color:#24518c;border:1px solid #cbdcf1}.btn-gold{background:var(--gold);color:#162e62;box-shadow:0 8px 17px #e6a9002b}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+    .upload-card{background:#fff;border:1px solid #dce9f8;border-radius:25px;padding:23px;box-shadow:var(--shadow);position:relative;overflow:hidden}.upload-card:before{content:"";position:absolute;top:-100px;right:-80px;width:220px;height:220px;background:#e6f3ff;border-radius:50%;z-index:0}.upload-card>*{position:relative;z-index:1}.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.card-title{font-family:Manrope,sans-serif;font-weight:900;font-size:19px;color:var(--navy)}.small-pill{background:#eff6ff;color:#2766b3;border-radius:100px;padding:7px 10px;font-size:10px;font-weight:800}.dropzone{border:2px dashed #9fc3f0;border-radius:18px;background:#f6faff;min-height:205px;padding:23px 17px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:.2s}.dropzone.dragover{background:#eaf4ff;border-color:var(--blue);transform:scale(1.01)}.upload-icon{height:55px;width:55px;border-radius:17px;background:linear-gradient(145deg,#e0efff,#f0f7ff);display:grid;place-items:center;color:#1766ca;margin-bottom:12px}.upload-icon svg{width:28px;height:28px}.dropzone strong{font-size:14px;color:#1e3e70}.dropzone p{font-size:11px;color:#8292a8;margin:7px 0 13px}.browse{color:#1467d7;text-decoration:underline;font-weight:800;cursor:pointer}.file-line{display:flex;align-items:center;justify-content:space-between;background:#edf6ff;border:1px solid #d5e7fa;border-radius:12px;padding:11px 12px;margin-top:13px;gap:10px}.file-meta{display:flex;align-items:center;gap:10px;min-width:0}.ppt-icon{height:34px;width:34px;border-radius:10px;background:#fff;color:#e27639;display:grid;place-items:center;font-weight:900;font-size:10px}.file-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.file-size{font-size:10px;color:#7b8ba2;margin-top:2px}.remove-file{border:0;background:transparent;color:#7a8ba2;font-size:19px}.full{width:100%;margin-top:14px}.privacy-note{font-size:10px;color:#8a98ab;line-height:1.5;margin:11px 1px 0}.status-line{font-size:11px;margin-top:12px;color:#71839c;display:flex;align-items:center;gap:7px}.status-line .status-dot{height:7px;width:7px;border-radius:50%;background:#d39b20}.status-line.ready .status-dot{background:#16a36b}.status-line.error .status-dot{background:#d44855}
+    .section{padding:72px 0}.section-head{text-align:center;max-width:690px;margin:0 auto 34px}.section-kicker{color:#2873c4;font-size:11px;letter-spacing:1.4px;font-weight:900;text-transform:uppercase}.section-head h2{font-family:Manrope,sans-serif;color:#15346f;font-size:clamp(27px,3.5vw,39px);letter-spacing:-1px;margin:10px 0}.section-head p{color:#71819a;font-size:14px;line-height:1.7;margin:0}.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.feature{background:#fff;border:1px solid #e1ebf8;border-radius:19px;padding:21px;box-shadow:0 9px 25px #1c4e8b0a}.feature-icon{height:47px;width:47px;display:grid;place-items:center;border-radius:15px;background:#eaf3ff;color:#1764cb;margin-bottom:15px}.feature-icon svg{width:25px;height:25px}.feature h3{font-family:Manrope,sans-serif;color:#1b3a76;font-size:15px;margin:0 0 8px}.feature p{font-size:12px;line-height:1.65;color:#77869c;margin:0}.modes-strip{background:linear-gradient(120deg,#112f70,#1456bd);border-radius:25px;padding:28px;color:white;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;overflow:hidden;position:relative}.modes-strip:after{content:"";position:absolute;width:300px;height:300px;border:1px solid #ffffff18;border-radius:50%;right:12%;top:-180px}.modes-strip h3{font-family:Manrope,sans-serif;font-size:23px;margin:0 0 7px;position:relative;z-index:1}.modes-strip p{font-size:12px;color:#c1d8f7;margin:0;position:relative;z-index:1}.mode-chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;position:relative;z-index:1}.mode-chips span{border:1px solid #ffffff40;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:800;color:#f3f8ff;background:#ffffff0d}
+    .campus-art{border:1px solid #dbe9f8;border-radius:22px;overflow:hidden;margin:0 0 18px;background:#eaf5ff;box-shadow:0 10px 25px #1c4e8b0a}.campus-art img{display:block;width:100%;height:auto;max-height:270px;object-fit:cover}.campus-caption{padding:11px 16px;background:#fff;color:#72829a;font-size:10px}.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.step{position:relative;text-align:center;background:white;border:1px solid #e3edf8;border-radius:18px;padding:23px 17px}.step-number{width:31px;height:31px;background:#146add;color:white;border-radius:50%;display:grid;place-items:center;margin:0 auto 13px;font-size:12px;font-weight:900}.step h4{margin:0 0 6px;color:#1e3d74;font-size:14px}.step p{font-size:11px;color:#7a8aa1;line-height:1.55;margin:0}.footer{background:#0d285f;color:#d1e0f5;padding:31px 0}.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.footer-brand{font-family:Manrope,sans-serif;font-weight:900;color:white;font-size:18px}.footer p{font-size:10px;color:#a9bfdc;margin:4px 0 0}.footer-tag{font-size:11px;color:#c6d9f4}
+    /* App views */
+    .app-shell{min-height:calc(100vh - 76px);padding:40px 0 70px;background:linear-gradient(180deg,#f0f7ff,#f8fbff)}.app-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:16px}.back-link{border:0;background:transparent;color:#42648e;font-weight:800;font-size:12px;padding:8px 0}.app-title{font-family:Manrope,sans-serif;color:var(--navy);font-size:29px;font-weight:900;letter-spacing:-.8px;margin:0}.app-sub{color:#75849a;font-size:12px;margin:6px 0 0}.guide-layout{display:grid;grid-template-columns:1fr 290px;gap:19px;align-items:start}.guide-main,.side-card,.quiz-panel,.mode-panel{background:#fff;border:1px solid #e0ebf8;border-radius:20px;padding:23px;box-shadow:0 10px 28px #1c4e8b0a}.guide-main h2{font-family:Manrope;color:#16366f;font-size:23px;margin:0 0 8px}.guide-main .overview{color:#61748f;font-size:13px;line-height:1.7;margin:0 0 20px}.guide-section{border-top:1px solid #e9f0f8;padding:18px 0 4px}.guide-section h3{font-family:Manrope;color:#1e4f99;font-size:16px;margin:0 0 10px}.guide-section p,.guide-section li{color:#52657f;font-size:12px;line-height:1.7}.guide-section ul{padding-left:19px;margin:8px 0}.example-box{background:#f4f9ff;border:1px solid #dbeafb;border-radius:13px;padding:13px;margin:10px 0}.brain-box{border-left:4px solid #f4b91b;background:#fff9e9;border-radius:0 12px 12px 0;padding:12px 14px;margin:11px 0;color:#735719;font-size:12px;line-height:1.6}.brain-box b{display:block;font-size:10px;letter-spacing:.8px;margin-bottom:4px;color:#a17600}.side-card{position:sticky;top:95px}.side-card h3{font-family:Manrope;color:#193d7a;margin:0 0 10px;font-size:15px}.side-card p{font-size:11px;color:#77879c;line-height:1.6}.side-stat{display:flex;justify-content:space-between;border-top:1px solid #edf2f8;padding:10px 0;font-size:11px;color:#657892}.side-stat strong{color:#244b83}.quiz-choices{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.mode-choice{border:1px solid #dce8f7;border-radius:17px;background:#fff;padding:17px;text-align:left;transition:.2s;min-height:133px}.mode-choice:hover{border-color:#80b6f4;transform:translateY(-2px);box-shadow:0 10px 24px #1a5db311}.mode-choice .mode-icon{height:39px;width:39px;border-radius:12px;background:#edf5ff;color:#2468bd;display:grid;place-items:center;font-weight:900;font-size:17px;margin-bottom:9px}.mode-choice h3{margin:0 0 5px;color:#23447b;font-size:14px}.mode-choice p{margin:0;color:#7a899e;font-size:11px;line-height:1.5}.mode-choice.featured{background:linear-gradient(145deg,#eef6ff,#fff);border-color:#a8cdf7}.quiz-panel{max-width:860px;margin:0 auto}.quiz-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:16px}.quiz-label{font-size:10px;font-weight:900;color:#2771c7;letter-spacing:.8px;text-transform:uppercase}.quiz-count{font-size:11px;color:#70819a;font-weight:800}.progress{height:7px;border-radius:20px;background:#eaf0f8;overflow:hidden;margin-bottom:20px}.progress>span{display:block;height:100%;background:linear-gradient(90deg,#1264df,#36a0ff);border-radius:20px;transition:width .25s}.question-topic{display:inline-block;color:#2c70bd;background:#edf6ff;border-radius:100px;padding:6px 10px;font-size:10px;font-weight:800;margin-bottom:12px}.question-context{background:#f7faff;border-left:3px solid #8cbdf1;border-radius:0 10px 10px 0;padding:12px 14px;color:#637692;font-size:12px;line-height:1.65;margin-bottom:14px}.question-text{font-family:Manrope,sans-serif;font-size:19px;line-height:1.45;color:#17366f;font-weight:800;margin:0 0 18px}.answer-options{display:grid;gap:9px}.answer-option{width:100%;text-align:left;border:1px solid #dfe9f6;background:#fff;border-radius:12px;padding:13px;display:flex;align-items:center;gap:11px;color:#415675;font-size:12px;line-height:1.5;transition:.15s}.answer-option:hover{border-color:#96c0f1;background:#f9fcff}.answer-option.selected{border-color:#2679db;background:#eff7ff;color:#1d4e91;box-shadow:0 0 0 2px #2679db15}.option-letter{height:26px;min-width:26px;border-radius:8px;background:#edf2f8;color:#637894;display:grid;place-items:center;font-size:10px;font-weight:900}.selected .option-letter{background:#2375d4;color:#fff}.question-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}.text-button{border:0;background:transparent;color:#4d6c94;font-size:11px;font-weight:800;padding:8px}.text-button.active{color:#ad7800;background:#fff6d9;border-radius:9px}.explanation-panel{margin-top:18px;border:1px solid #d8e8fa;border-radius:15px;overflow:hidden}.explanation-head{padding:11px 14px;background:#eef6ff;color:#1f5598;font-size:11px;font-weight:900}.explanation-content{padding:14px;color:#4d617e;font-size:12px;line-height:1.7}.explanation-content strong{color:#1d427a}.explanation-example{margin-top:11px;background:#f4f8ff;border-radius:10px;padding:11px}.reviewed-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:18px}.review-dot{height:24px;min-width:24px;border-radius:7px;background:#edf2f8;color:#6f8098;border:0;font-size:9px;font-weight:900}.review-dot.current{background:#1d6fd0;color:white}.review-dot.done{background:#dff5eb;color:#18784f}.review-dot.flagged{outline:2px solid #f0b82f;outline-offset:1px}.results-hero{background:linear-gradient(120deg,#123477,#1468ce);border-radius:20px;padding:26px;color:white;margin-bottom:17px;display:flex;align-items:center;justify-content:space-between;gap:20px}.score-number{font-family:Manrope;font-size:42px;font-weight:900}.results-hero p{font-size:12px;color:#c7defb;margin:5px 0 0}.result-item{border:1px solid #e2eaf5;border-radius:13px;padding:13px;margin-top:10px}.result-item h4{margin:0 0 7px;font-size:12px;color:#1e3d75}.result-item p{font-size:11px;color:#72829a;line-height:1.6;margin:5px 0}.correct-text{color:#14815b!important;font-weight:800}.wrong-text{color:#c34252!important;font-weight:800}
+    /* loading and notices */
+    .loading-overlay{position:fixed;inset:0;background:rgba(9,30,72,.74);backdrop-filter:blur(9px);z-index:80;display:grid;place-items:center;padding:20px}.loading-card{width:min(410px,100%);background:white;border-radius:24px;padding:31px;text-align:center;box-shadow:0 25px 85px #00143855}.spinner-mark{width:88px;height:88px;margin:0 auto 18px;border-radius:50%;border:1px solid #d8e8fb;background:linear-gradient(145deg,#eff7ff,#fff);display:grid;place-items:center;animation:spin 2.2s linear infinite;box-shadow:0 10px 25px #1764c51c}.spinner-mark svg{width:48px;height:48px}.loading-card h3{font-family:Manrope;color:#183976;font-size:19px;margin:0 0 7px}.loading-card p{color:#71819a;font-size:12px;line-height:1.6;margin:0}.loading-track{height:6px;border-radius:10px;background:#edf3fa;margin:19px 0 9px;overflow:hidden}.loading-track span{display:block;height:100%;width:40%;border-radius:10px;background:linear-gradient(90deg,#176be0,#62b5ff);animation:loading 2.1s ease-in-out infinite}.loading-step{font-size:10px;color:#5881b4;font-weight:800}.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#142d58;color:white;padding:13px 17px;border-radius:12px;box-shadow:0 12px 30px #071a3f30;font-size:12px;z-index:100;opacity:0;pointer-events:none;transition:.25s;max-width:min(600px,calc(100% - 30px));line-height:1.5}.toast.show{opacity:1;transform:translate(-50%,0)}.api-notice{border:1px solid #f1dca3;background:#fff9e9;color:#856515;border-radius:12px;padding:10px 12px;font-size:10px;line-height:1.55;margin-top:11px}.api-notice.connected{border-color:#bce6d2;background:#effaf4;color:#18794e}
+    @keyframes spin{to{transform:rotate(360deg)}}@keyframes logoTwirl{0%,100%{transform:rotateY(0deg)}50%{transform:rotateY(180deg)}}@keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+    @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:25px}.upload-card{max-width:620px}.feature-grid,.how-grid{grid-template-columns:repeat(2,1fr)}.guide-layout{grid-template-columns:1fr}.side-card{position:static}.modes-strip{grid-template-columns:1fr}.mode-chips{justify-content:flex-start}}
+    @media(max-width:620px){.topbar{height:65px}.brand{font-size:17px}.navlinks{gap:13px}.navlinks a:not(.nav-cta){display:none}.container{width:min(100% - 28px,1180px)}.hero{padding-top:20px}.banner-frame{padding:5px;margin-bottom:24px;border-radius:16px}.banner-frame img{border-radius:12px;max-height:165px}.hero h1{font-size:39px;letter-spacing:-1.5px}.hero-copy{font-size:13px}.upload-card{padding:16px}.dropzone{min-height:185px}.section{padding:52px 0}.feature-grid,.how-grid{grid-template-columns:1fr 1fr;gap:9px}.feature{padding:14px}.feature h3{font-size:13px}.feature p{font-size:10px}.modes-strip{padding:21px}.mode-chips span{font-size:9px}.app-shell{padding:25px 0 48px}.app-title{font-size:23px}.quiz-choices{grid-template-columns:1fr}.quiz-panel,.guide-main,.side-card,.mode-panel{padding:16px}.question-text{font-size:17px}.results-hero{padding:18px}.score-number{font-size:34px}.footer-inner{align-items:flex-start;flex-direction:column}.hero-actions .btn{flex:1}.nav-cta{padding:10px 12px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="#home" class="brand" aria-label="StudentsGUIDE home">
+      <span class="brand-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"/><path d="M6 9v6.5c3.8 3 8.2 3 12 0V9M21 8v7"/><path d="M12 12v8"/></svg></span>
+      <span>Students<em>GUIDE</em>.com</span>
+    </a>
+    <nav class="navlinks">
+      <a href="#features">Features</a><a href="#how">How it works</a><a href="#modes">Quiz modes</a>
+      <a href="#upload" class="nav-cta">Start learning <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="homeView">
+    <section class="hero" id="home">
+      <div class="container">
+        <div class="banner-frame"><img src="/assets/studentsguide-brand.png" alt="StudentsGUIDE.com official brand banner: Study Guide, Examples, Brainhacks and Practice Quiz" /></div>
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow"><span class="dot"></span> Your AI-powered study companion</div>
+            <h1>Struggles less.<br><span>Study smart.</span></h1>
+            <p class="hero-copy">Turn your lecture PowerPoint into a clear study guide, memorable examples, practical brain hacks and an interactive quiz — all in one learning workspace.</p>
+            <div class="hero-checks"><span><b class="tick">✓</b> Lecture-based materials</span><span><b class="tick">✓</b> Downloadable PDF</span><span><b class="tick">✓</b> Five quiz modes</span></div>
+            <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()">Upload a lecture <span>↗</span></button><button class="btn btn-light" onclick="loadSamplePreview()">Explore sample experience</button></div>
+          </div>
+          <div class="upload-card" id="upload">
+            <div class="card-head"><div class="card-title">Create your study guide</div><span class="small-pill">POWERPOINT TO PDF</span></div>
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop a PowerPoint file">
+              <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
+              <strong>Drag & drop your lecture slides here</strong>
+              <p>or <span class="browse" id="browseLink">browse files</span></p>
+              <span class="small-pill">PowerPoint .PPTX · Max 20 MB</span>
+            </div>
+            <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
+            <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
+            <button class="btn btn-primary full" id="generateBtn" disabled>Generate my Study Guide <span>✦</span></button>
+            <div class="status-line" id="apiStatus"><span class="status-dot"></span><span>Checking AI connection…</span></div>
+            <div class="api-notice hidden" id="apiNotice"></div>
+            <p class="privacy-note">Your PowerPoint is processed by the application server to create the requested learning materials. Do not upload confidential or restricted lecture content without permission.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head"><div class="section-kicker">Everything in one place</div><h2>From lecture slides to learning confidence</h2><p>StudentsGUIDE organizes revision into clear explanations, practical examples and focused self-assessment.</p></div>
+        <div class="feature-grid">
+          <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3.5h10l4 4V21H5z"/><path d="M15 3.5V8h4M8 12h8M8 16h8"/></svg></div><h3>Smart Study Guide</h3><p>Generate organized summaries and simplified explanations from the lecture you upload.</p></article>
+          <article class="feature"><div class="feature-icon" style="background:#fff4df;color:#d58a00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18h6M10 22h4M8 14c-1.3-1-2-2.5-2-4a6 6 0 1 1 12 0c0 1.5-.7 3-2 4-.7.6-1 1.3-1 2h-6c0-.7-.3-1.4-1-2Z"/><path d="M12 5v2M5 10H3M21 10h-2"/></svg></div><h3>Examples & Brain Hacks</h3><p>Connect difficult ideas to step-by-step examples and memorable recall cues.</p></article>
+          <article class="feature"><div class="feature-icon" style="background:#f1eaff;color:#8150c5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 4.5a3 3 0 0 0-5.5 1.6A3.5 3.5 0 0 0 4 13a3.5 3.5 0 0 0 4.5 5.5A3 3 0 0 0 12 21V3a3 3 0 0 0-3 1.5ZM15 4.5a3 3 0 0 1 5.5 1.6A3.5 3.5 0 0 1 20 13a3.5 3.5 0 0 1-4.5 5.5A3 3 0 0 1 12 21"/><path d="M7 9h2m6 0h2M7 14h2m6 0h2"/></svg></div><h3>Interactive Quiz</h3><p>Choose from five quiz modes and practise with questions drawn from your slides.</p></article>
+          <article class="feature"><div class="feature-icon" style="background:#e6f8f2;color:#16865f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h14v18H5z"/><path d="m8 9 2 2 5-5M8 16h8"/></svg></div><h3>Feedback that teaches</h3><p>See correct answers, detailed reasoning, brain hacks and your final quiz score.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="modes" style="padding-top:0">
+      <div class="container">
+        <div class="modes-strip"><div><h3>Choose how you want to practise</h3><p>Short revision or a full mixed assessment. Your lecture sets the content.</p></div><div class="mode-chips"><span>MCQ 20</span><span>MCQ 10</span><span>TRUE / FALSE 10</span><span>SCENARIO 15</span><span>MIXED 40</span></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="how" style="padding-top:0">
+      <div class="container">
+        <div class="section-head"><div class="section-kicker">Made for student life</div><h2>A campus-inspired learning space</h2><p>A bright, student-friendly interface with an academic look inspired by the university environment.</p></div>
+        <div class="campus-art"><img src="/assets/campus-illustration.svg" alt="Illustration of a modern university campus, palm trees and study books"><div class="campus-caption">Illustrative campus-inspired artwork created for the StudentsGUIDE project. It is not an official Ajman University image.</div></div>
+        <div class="section-head" style="margin-top:40px"><div class="section-kicker">A simple workflow</div><h2>Four steps. One focused study session.</h2><p>Move from the original class material to your personal revision and self-check.</p></div>
+        <div class="how-grid"><div class="step"><div class="step-number">1</div><h4>Upload your PPTX</h4><p>Choose a PowerPoint lecture from your device.</p></div><div class="step"><div class="step-number">2</div><h4>Generate your guide</h4><p>AI organizes the lecture into a study guide with examples and brain hacks.</p></div><div class="step"><div class="step-number">3</div><h4>Choose a quiz mode</h4><p>Generate MCQs, true/false, scenario or mixed questions.</p></div><div class="step"><div class="step-number">4</div><h4>Review and improve</h4><p>See explanations, mark questions and check your result.</p></div></div>
+      </div>
+    </section>
+  </main>
+
+  <main id="guideView" class="app-shell hidden"><div class="container">
+    <div class="app-top"><div><button class="back-link" onclick="goHome()">← Back to home</button><h1 class="app-title">Your study guide</h1><p class="app-sub" id="guideMeta">Generated from your uploaded lecture</p></div><span class="small-pill" id="guideModeBadge">AI-GENERATED GUIDE</span></div>
+    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Download it as a PDF, then use the same lecture content to generate an interactive quiz.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
+  </div></main>
+
+  <main id="modeView" class="app-shell hidden"><div class="container">
+    <div class="app-top"><div><button class="back-link" onclick="showGuide()">← Back to study guide</button><h1 class="app-title">Your interactive quiz</h1><p class="app-sub">Choose a format that fits your revision session.</p></div><span class="small-pill">BUILT FROM YOUR LECTURE</span></div>
+    <section class="mode-panel"><div style="margin-bottom:18px"><h2 style="font-family:Manrope;color:#17366f;margin:0 0 7px;font-size:21px">Select your quiz mode</h2><p style="color:#7b8aa0;font-size:12px;margin:0">Each question includes an answer explanation and a memory cue.</p></div><div class="quiz-choices">
+      <button class="mode-choice" onclick="startQuiz('MCQ 20')"><div class="mode-icon">A–D</div><h3>MCQ 20</h3><p>20 multiple-choice questions for thorough practice.</p></button>
+      <button class="mode-choice" onclick="startQuiz('MCQ 10')"><div class="mode-icon">10</div><h3>MCQ 10</h3><p>A quick multiple-choice knowledge check.</p></button>
+      <button class="mode-choice" onclick="startQuiz('TRUE OR FALSE 10')"><div class="mode-icon">T/F</div><h3>True or False 10</h3><p>Test your understanding of key lecture statements.</p></button>
+      <button class="mode-choice" onclick="startQuiz('SCENARIO QUESTIONS 15')"><div class="mode-icon">15</div><h3>Scenario Questions 15</h3><p>Apply lecture concepts to practical situations.</p></button>
+      <button class="mode-choice featured" onclick="startQuiz('MIXED 40')" style="grid-column:1/-1"><div class="mode-icon">40</div><h3>Mixed 40</h3><p>A combined assessment with MCQ, true/false and scenario questions.</p></button>
+    </div></section>
+  </div></main>
+
+  <main id="quizView" class="app-shell hidden"><div class="container">
+    <div class="app-top"><div><button class="back-link" onclick="showModes()">← Change quiz mode</button><h1 class="app-title" id="quizTitle">Interactive Quiz</h1><p class="app-sub" id="quizSub">Answer each question, then submit to see your result.</p></div><span class="small-pill" id="quizModeBadge">MCQ 20</span></div>
+    <section class="quiz-panel" id="quizContent"></section>
+  </div></main>
+
+  <main id="resultsView" class="app-shell hidden"><div class="container">
+    <div class="app-top"><div><h1 class="app-title">Your quiz results</h1><p class="app-sub">Review what you know and what to practise next.</p></div><span class="small-pill">ASSESSMENT COMPLETE</span></div>
+    <section id="resultsContent"></section>
+  </div></main>
+
+  <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div><div class="footer-tag">A student-focused AI learning project · AIT111</div></div></footer>
+
+  <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite"><div class="loading-card"><div class="spinner-mark" style="width:190px;height:66px;border-radius:14px;border:1px solid #d8e8fb;animation:none;overflow:hidden;padding:4px"><img src="/assets/studentsguide-brand.png" alt="StudentsGUIDE logo" style="width:100%;height:100%;object-fit:contain;animation:logoTwirl 2s ease-in-out infinite;transform-style:preserve-3d"></div><h3 id="loadingTitle">Preparing your learning materials</h3><p id="loadingMessage">Reading the uploaded lecture and organizing the content.</p><div class="loading-track"><span></span></div><div class="loading-step" id="loadingStep">PLEASE WAIT</div></div></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let selectedFile = null;
+    let aiConfigured = false;
+    let currentGuide = null;
+    let currentQuiz = null;
+    let currentSourceText = '';
+    let currentQuestion = 0;
+    let answers = {};
+    let flagged = new Set();
+    let revealed = new Set();
+    let isSamplePreview = false;
+    let activeToast = null;
+
+    const sampleGuide = {
+      title:'Introduction to Artificial Intelligence', course:'Artificial Intelligence', overview:'This illustrative preview demonstrates how StudentsGUIDE can organize an introductory lecture into key concepts, explanations, examples and memory cues. It is sample content and was not generated from an uploaded lecture.', slide_count:6, source_filename:'Sample preview (not uploaded)', generation_type:'Illustrative sample preview',
+      learning_objectives:['Describe AI in simple terms.','Distinguish task-focused AI from broader, more general AI ideas.','Identify common examples of AI in everyday applications.'],
+      sections:[
+        {heading:'What is Artificial Intelligence?',key_points:['AI refers to computer systems designed to perform tasks that normally require human-like intelligence.','Examples can include recognizing patterns, understanding language and making predictions.'],explanation:'Artificial Intelligence is a field of computing concerned with systems that can carry out tasks such as recognizing information, learning from patterns, reasoning or generating content. The exact capability depends on the system and its design.',example:{title:'Detailed example: recognizing an email message',scenario:'Imagine an email service that checks incoming messages and decides whether a message is likely to be spam.',steps:['The system receives an email and examines features such as words, links and sender patterns.','A model compares those features with patterns learned from previously labelled examples.','The system estimates whether the message resembles spam or legitimate email.','The email service can then place the message in the appropriate folder, while allowing the user to correct mistakes.'],takeaway:'The system uses patterns in data to support a classification decision. This is an example of an AI application, not proof that the system thinks exactly like a human.'},brainhack:'AI = Analyze information + Identify patterns. Remember the two actions: analyze, then act or assist.',important_terms:[{term:'Pattern',meaning:'A repeated relationship or feature in information that a model can learn to recognize.'}]},
+        {heading:'Generative AI',key_points:['Generative AI produces new content based on patterns learned during training.','Outputs can include text, images, audio and other media.'],explanation:'Generative AI is a category of AI that creates new output in response to a prompt or other input. The generated result is not necessarily correct, so it should be checked.',example:{title:'Short example',scenario:'A student asks a language model to create practice questions from lecture notes.',steps:['The student provides the notes.','The model identifies topics and produces draft questions.','The student checks that the questions match the lecture.'],takeaway:'Generative AI creates a new learning resource from supplied material.'},brainhack:'Generative = generate. Think “make something new,” not simply “find something stored.”',important_terms:[{term:'Prompt',meaning:'The instruction or input that guides a generative AI system.'}]}
+      ],quick_recap:['AI systems perform tasks such as recognizing patterns, predicting or generating content.','Generative AI creates new content from prompts and learned patterns.','AI outputs should be checked against reliable source material.'],exam_tips:['Be able to explain each term in your own words.','Use a real application example to support your explanation.'],coverage_note:'This is an illustrative interface preview only. Upload a lecture and connect an AI API to create lecture-specific output.'
+    };
+    const sampleQuiz = {quiz_title:'Introduction to Artificial Intelligence · Sample Preview',mode:'MCQ 10',questions:[
+      {id:1,type:'mcq',topic:'AI fundamentals',question:'Which statement best describes the purpose of Artificial Intelligence?',options:[{label:'A',text:'To make computers perform tasks that can require human-like intelligence'},{label:'B',text:'To replace every computer program with a spreadsheet'},{label:'C',text:'To store files without processing information'},{label:'D',text:'To prevent computers from learning patterns'}],correct_answer:'A',explanation:'AI focuses on building systems that perform tasks such as recognizing patterns, making predictions, understanding language or generating content. It does not mean every computer program is intelligent.',example:'Detailed example: An email filter can analyze message features and identify patterns associated with spam. It uses those patterns to classify a message. That is a practical example of AI supporting a task.',brainhack:'AI = Analyze information + Identify patterns. Think about what the system does with information.',source_basis:'Illustrative sample topic: definition and applications of AI.'},
+      {id:2,type:'true_false',topic:'Generative AI',question:'Generative AI can create new content in response to a prompt.',options:[{label:'True',text:'True'},{label:'False',text:'False'}],correct_answer:'True',explanation:'Generative AI produces new outputs such as text, images or audio based on patterns learned during training and the prompt it receives.',example:'A student gives a model lecture notes and asks it to draft practice questions.',brainhack:'Generative means generate: create a new output.',source_basis:'Illustrative sample topic: generative AI.'},
+      {id:3,type:'scenario',topic:'Applying AI',context:'A university student submits lecture notes to an AI system and asks it to produce a set of revision questions.',question:'Which description best explains the AI activity in this situation?',options:[{label:'A',text:'The system is only storing the original notes unchanged'},{label:'B',text:'The system is generating new learning material from the supplied notes'},{label:'C',text:'The system is physically printing the lecture slides'},{label:'D',text:'The system is deleting the original notes'}],correct_answer:'B',explanation:'The system is creating a new output, namely revision questions, using the supplied lecture notes as context. That is a generative use case.',example:'The input is the lecture notes. The generated output is a set of questions. A student should still verify that each question accurately reflects the lecture.',brainhack:'Input → Generate → Check. Remember these three steps.',source_basis:'Illustrative sample topic: applying generative AI in education.'}
+    ]};
+
+    function toast(message, duration=3800){
+      const el=$('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(activeToast); activeToast=setTimeout(()=>el.classList.remove('show'),duration);
+    }
+    function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function formatSize(bytes){return bytes<1024*1024?`${(bytes/1024).toFixed(0)} KB`:`${(bytes/1024/1024).toFixed(2)} MB`;}
+    async function checkStatus(){
+      try{const r=await fetch('/api/status'); const data=await r.json(); aiConfigured=!!data.ai_configured;
+        $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
+        $('apiStatus').innerHTML=`<span class="status-dot"></span><span>${aiConfigured?`AI connected · ${escapeHtml(data.model)}`:'AI connection needs setup'}</span>`;
+        $('apiNotice').classList.toggle('hidden',aiConfigured);
+        if(!aiConfigured)$('apiNotice').textContent='The website interface is ready, but live AI generation needs an API key configured on the server. A ChatGPT subscription does not automatically connect an API key.';
+        else {$('apiNotice').classList.add('connected');$('apiNotice').textContent='AI generation is connected. Your uploaded lecture will be processed by the server-side model.';}
+        if(aiConfigured){$('apiNotice').classList.remove('hidden');}
+      }catch(e){$('apiStatus').className='status-line error';$('apiStatus').innerHTML='<span class="status-dot"></span><span>Could not reach the app server</span>';}
+    }
+    function setFile(file){
+      if(!file)return;
+      if(!file.name.toLowerCase().endsWith('.pptx')){toast('Please choose a PowerPoint .pptx file.');return;}
+      if(file.size>20*1024*1024){toast('This file is larger than 20 MB. Choose a smaller PowerPoint.');return;}
+      selectedFile=file;$('fileName').textContent=file.name;$('fileSize').textContent=formatSize(file.size);$('fileLine').classList.remove('hidden');$('generateBtn').disabled=false;
+    }
+    $('pptInput').addEventListener('change',e=>setFile(e.target.files[0]));
+    $('browseLink').addEventListener('click',e=>{e.stopPropagation();$('pptInput').click();});
+    $('dropzone').addEventListener('click',e=>{if(e.target.id!=='browseLink')$('pptInput').click();});
+    $('dropzone').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('pptInput').click();}});
+    $('removeFile').addEventListener('click',()=>{selectedFile=null;$('pptInput').value='';$('fileLine').classList.add('hidden');$('generateBtn').disabled=true;});
+    ['dragenter','dragover'].forEach(type=>$('dropzone').addEventListener(type,e=>{e.preventDefault();$('dropzone').classList.add('dragover');}));
+    ['dragleave','drop'].forEach(type=>$('dropzone').addEventListener(type,e=>{e.preventDefault();$('dropzone').classList.remove('dragover');}));
+    $('dropzone').addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+
+    function showLoading(title,message,step){$('loadingTitle').textContent=title;$('loadingMessage').textContent=message;$('loadingStep').textContent=step;$('loadingOverlay').classList.remove('hidden');}
+    function hideLoading(){$('loadingOverlay').classList.add('hidden');}
+    function hideViews(){['homeView','guideView','modeView','quizView','resultsView'].forEach(id=>$(id).classList.add('hidden'));}
+    function goHome(){hideViews();$('homeView').classList.remove('hidden');$('siteFooter').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+    function showGuide(){hideViews();$('guideView').classList.remove('hidden');$('siteFooter').classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+    function showModes(){hideViews();$('modeView').classList.remove('hidden');$('siteFooter').classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+    function showQuiz(){hideViews();$('quizView').classList.remove('hidden');$('siteFooter').classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+
+    $('generateBtn').addEventListener('click',generateGuide);
+    async function generateGuide(){
+      if(!selectedFile)return;
+      if(!aiConfigured){toast('AI is not connected yet. Add the server-side API key first. You can still explore the sample preview.');return;}
+      const form=new FormData();form.append('file',selectedFile);
+      showLoading('Creating your study guide','Extracting your PowerPoint slides and preparing the AI study guide.','STEP 1 OF 3 · READING LECTURE');
+      try{
+        const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.detail||'The study guide could not be generated.');
+        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();$('loadingTitle').textContent='Formatting your PDF';$('loadingMessage').textContent='Your guide is ready. StudentsGUIDE is preparing the downloadable PDF.';$('loadingStep').textContent='STEP 3 OF 3 · CREATING PDF';await downloadStudyPdf(true);hideLoading();showGuide();toast('Your study guide and PDF are ready.');
+      }catch(error){hideLoading();toast(error.message||'Something went wrong while generating the guide.',5500);}
+    }
+    function loadSamplePreview(){
+      currentGuide=JSON.parse(JSON.stringify(sampleGuide));currentSourceText='SAMPLE PREVIEW ONLY: Introduction to Artificial Intelligence. This illustrative content is not from an uploaded lecture.';isSamplePreview=true;renderGuide();showGuide();toast('Sample preview loaded. This is illustrative content, not a live AI output.');
+    }
+    function renderGuide(){
+      const g=currentGuide; if(!g)return;
+      $('guideMeta').textContent=`${g.generation_type||'Study guide'} · ${g.source_filename||'Lecture'}`;
+      $('guideModeBadge').textContent=isSamplePreview?'SAMPLE PREVIEW':'AI-GENERATED GUIDE';
+      $('slideCount').textContent=g.slide_count??'—';$('topicCount').textContent=(g.sections||[]).length;$('sourceName').textContent=g.source_filename||'Lecture';
+      let html=`<h2>${escapeHtml(g.title||'Your study guide')}</h2><p class="overview">${escapeHtml(g.overview||'')}</p>`;
+      if(g.learning_objectives?.length){html+='<div class="guide-section"><h3>What you should understand</h3><ul>'+g.learning_objectives.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ul></div>';}
+      (g.sections||[]).forEach((s,i)=>{
+        html+=`<section class="guide-section"><h3>${i+1}. ${escapeHtml(s.heading||'Topic')}</h3>`;
+        if(s.key_points?.length)html+='<b style="font-size:11px;color:#536b8b">KEY POINTS</b><ul>'+s.key_points.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ul>';
+        if(s.explanation)html+=`<p>${escapeHtml(s.explanation)}</p>`;
+        if(s.example){const ex=s.example;html+=`<div class="example-box"><b style="color:#1c579d;font-size:11px">${escapeHtml(ex.title||'Example')}</b><p>${escapeHtml(ex.scenario||'')}</p>${ex.steps?.length?'<ol>'+ex.steps.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ol>':''}${ex.takeaway?`<p><b>Takeaway:</b> ${escapeHtml(ex.takeaway)}</p>`:''}</div>`;}
+        if(s.brainhack)html+=`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(s.brainhack)}</div>`;
+        if(s.important_terms?.length)html+='<p><b>Important terms</b><br>'+s.important_terms.map(t=>`<b>${escapeHtml(t.term)}:</b> ${escapeHtml(t.meaning)}`).join('<br>')+'</p>';
+        html+='</section>';
+      });
+      if(g.quick_recap?.length)html+='<section class="guide-section"><h3>Quick recap</h3><ul>'+g.quick_recap.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ul></section>';
+      if(g.exam_tips?.length)html+='<section class="guide-section"><h3>Exam tips</h3><ul>'+g.exam_tips.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ul></section>';
+      if(g.coverage_note)html+=`<section class="guide-section"><h3>Content coverage note</h3><p>${escapeHtml(g.coverage_note)}</p></section>`;
+      $('guideContent').innerHTML=html;
+      $('downloadPdf').textContent=isSamplePreview?'↓ Download sample PDF':'↓ Download Study Guide PDF';
+    }
+    $('downloadPdf').addEventListener('click',()=>downloadStudyPdf(false));
+    async function downloadStudyPdf(silent=false){
+      if(!currentGuide)return;
+      try{
+        const r=await fetch('/api/study-guide-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guide:currentGuide})});
+        if(!r.ok){const d=await r.json();throw new Error(d.detail||'Could not create the PDF.');}
+        const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='StudentsGUIDE_Study_Guide.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);if(!silent)toast('Your PDF download has started.');return true;
+      }catch(e){if(!silent)toast(e.message||'PDF export failed.');else toast(`The guide was generated, but PDF export failed: ${e.message}`,6000);return false;}
+    }
+    $('goQuiz').addEventListener('click',async()=>{
+      showLoading('Preparing your interactive quiz','Your study materials are ready. StudentsGUIDE is opening the quiz selection.','STEP 1 OF 2 · PREPARING QUIZ');
+      await new Promise(resolve=>setTimeout(resolve,1100));
+      hideLoading();
+      showModes();
+    });
+
+    async function startQuiz(mode){
+      if(!currentGuide)return;
+      if(isSamplePreview){currentQuiz=JSON.parse(JSON.stringify(sampleQuiz));currentQuiz.mode=mode;currentQuiz.quiz_title=`${mode} · Sample Preview`;currentQuiz.questions=fitSampleQuestions(mode);answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();toast('Sample quiz preview. Questions are illustrative, not generated from your lecture.');return;}
+      showLoading('Building your interactive quiz','Generating questions from the lecture and preparing complete explanations.','STEP 2 OF 3 · GENERATING QUESTIONS');
+      try{
+        const r=await fetch('/api/generate-quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_text:currentSourceText,mode,lecture_title:currentGuide.title||'Uploaded lecture'})});
+        const data=await r.json();if(!r.ok)throw new Error(data.detail||'The quiz could not be generated.');
+        currentQuiz=data;answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();hideLoading();showQuiz();toast(`${data.questions.length} questions generated.`);
+      }catch(e){hideLoading();toast(e.message||'Quiz generation failed.',5500);}
+    }
+    function fitSampleQuestions(mode){
+      const q=JSON.parse(JSON.stringify(sampleQuiz.questions));let count=mode==='MCQ 20'?20:mode==='MCQ 10'||mode==='TRUE OR FALSE 10'?10:mode==='SCENARIO QUESTIONS 15'?15:40;
+      const fixed=q.map((item,i)=>({...item,id:i+1}));const list=[];
+      for(let i=0;i<count;i++){let item=JSON.parse(JSON.stringify(fixed[i%fixed.length]));item.id=i+1;if(mode==='TRUE OR FALSE 10'){item.type='true_false';item.options=[{label:'True',text:'True'},{label:'False',text:'False'}];item.correct_answer='True';}else if(mode==='SCENARIO QUESTIONS 15'){item.type='scenario';}else if(mode==='MCQ 10'||mode==='MCQ 20'){item.type='mcq';}else if(i%3===1){item.type='true_false';item.options=[{label:'True',text:'True'},{label:'False',text:'False'}];item.correct_answer='True';}else if(i%3===2){item.type='scenario';}list.push(item);}
+      return list;
+    }
+    function normalizeAnswer(q,value){if(q.type==='true_false')return String(value).toLowerCase()===String(q.correct_answer).toLowerCase();return String(value).toUpperCase()===String(q.correct_answer).toUpperCase();}
+    function renderQuestion(){
+      const q=currentQuiz.questions[currentQuestion];const total=currentQuiz.questions.length;const selected=answers[q.id]||'';const typeLabel=q.type==='true_false'?'TRUE / FALSE':q.type==='scenario'?'SCENARIO QUESTION':'MULTIPLE CHOICE';
+      $('quizTitle').textContent=currentQuiz.quiz_title||'Interactive Quiz';$('quizSub').textContent=`${total} questions · Answer at your pace. You can mark a question to review it later.`;$('quizModeBadge').textContent=currentQuiz.mode||'QUIZ';
+      const correctLabel=q.type==='true_false'?String(q.correct_answer):`${q.correct_answer}`;
+      const options=(q.options||[]).map(o=>{const value=q.type==='true_false'?o.label:o.label;const active=selected===value;return `<button class="answer-option ${active?'selected':''}" onclick="selectAnswer('${escapeHtml(q.id)}','${escapeHtml(value)}')"><span class="option-letter">${escapeHtml(o.label)}</span><span>${escapeHtml(o.text)}</span></button>`;}).join('');
+      const isRevealed=revealed.has(q.id);const isFlagged=flagged.has(q.id);
+      let explain='';if(isRevealed){explain=`<div class="explanation-panel"><div class="explanation-head">✓ ANSWER & EXPLANATION · Correct answer: ${escapeHtml(correctLabel)}</div><div class="explanation-content"><p><strong>Why this is correct:</strong> ${escapeHtml(q.explanation||'Review the lecture topic to understand this answer.')}</p>${q.example?`<div class="explanation-example"><strong>Example:</strong><br>${escapeHtml(q.example)}</div>`:''}${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}${q.source_basis?`<p style="font-size:10px;color:#8492a5"><strong>Lecture connection:</strong> ${escapeHtml(q.source_basis)}</p>`:''}</div></div>`;}
+      $('quizContent').innerHTML=`<div class="quiz-head"><span class="quiz-label">${typeLabel} · ${escapeHtml(q.topic||'Lecture topic')}</span><span class="quiz-count">Question ${currentQuestion+1} of ${total}</span></div><div class="progress"><span style="width:${(currentQuestion+1)/total*100}%"></span></div>${q.context?`<div class="question-context">${escapeHtml(q.context)}</div>`:''}<div class="question-topic">${escapeHtml(q.topic||'Lecture question')}</div><h2 class="question-text">${escapeHtml(q.question)}</h2><div class="answer-options">${options}</div><div class="question-tools"><button class="text-button ${isFlagged?'active':''}" onclick="toggleFlag()">⚑ ${isFlagged?'Marked for review':'Mark to review'}</button><button class="text-button" onclick="toggleAnswer()">${isRevealed?'Hide answer':'See answer & explanation'}</button></div>${explain}<div class="reviewed-list">${currentQuiz.questions.map((item,i)=>`<button class="review-dot ${i===currentQuestion?'current':''} ${answers[item.id]?'done':''} ${flagged.has(item.id)?'flagged':''}" onclick="jumpQuestion(${i})" title="Question ${i+1}">${i+1}</button>`).join('')}</div><div class="question-tools" style="border-top:1px solid #eaf0f7;padding-top:16px;margin-top:17px"><button class="btn btn-light" onclick="previousQuestion()" ${currentQuestion===0?'disabled':''}>← Previous</button><div style="display:flex;gap:8px"><button class="btn btn-light" onclick="nextQuestion()" ${currentQuestion===total-1?'disabled':''}>Next →</button><button class="btn btn-primary" onclick="submitQuiz()">Submit quiz ✓</button></div></div>`;
+    }
+    window.selectAnswer=(id,value)=>{answers[id]=value;renderQuestion();};
+    window.toggleFlag=()=>{const id=currentQuiz.questions[currentQuestion].id;if(flagged.has(id))flagged.delete(id);else flagged.add(id);renderQuestion();};
+    window.toggleAnswer=()=>{const id=currentQuiz.questions[currentQuestion].id;if(revealed.has(id))revealed.delete(id);else revealed.add(id);renderQuestion();};
+    window.previousQuestion=()=>{if(currentQuestion>0){currentQuestion--;renderQuestion();}};
+    window.nextQuestion=()=>{if(currentQuestion<currentQuiz.questions.length-1){currentQuestion++;renderQuestion();}};
+    window.jumpQuestion=(i)=>{currentQuestion=i;renderQuestion();};
+    window.submitQuiz=()=>{
+      const total=currentQuiz.questions.length;const answered=Object.keys(answers).length;
+      if(answered<total&&!confirm(`You have answered ${answered} of ${total} questions. Submit anyway? Unanswered questions will be marked incorrect.`))return;
+      const correct=currentQuiz.questions.filter(q=>answers[q.id]&&normalizeAnswer(q,answers[q.id])).length;
+      renderResults(correct,total);hideViews();$('resultsView').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
+    };
+    function renderResults(correct,total){
+      const percent=Math.round(correct/total*100);const incorrect=currentQuiz.questions.filter(q=>!answers[q.id]||!normalizeAnswer(q,answers[q.id]));
+      let html=`<div class="results-hero"><div><div style="font-size:10px;font-weight:900;letter-spacing:1px;color:#c3ddff">YOUR SCORE</div><div class="score-number">${correct}/${total}</div><p>${percent}% · ${percent>=85?'Excellent work.':percent>=70?'Good progress. Review the missed questions.':percent>=50?'Keep practising. Focus on the explanations below.':'Use the study guide to revisit the key topics, then try again.'}</p></div><div style="font-size:44px">${percent>=80?'🏆':percent>=60?'📘':'🎯'}</div></div><div class="guide-main"><h2>Review your answers</h2><p class="overview">${incorrect.length?`${incorrect.length} question(s) need another look. Review the correct answer and explanation for each one.`:'You answered every question correctly. Review the topics once more to reinforce them.'}</p>`;
+      (incorrect.length?incorrect:currentQuiz.questions).forEach(q=>{const right=answers[q.id]&&normalizeAnswer(q,answers[q.id]);html+=`<div class="result-item"><h4>Q${q.id}. ${escapeHtml(q.question)}</h4><p class="${right?'correct-text':'wrong-text'}">${right?'Correct':'Review needed'} · Your answer: ${escapeHtml(answers[q.id]||'Not answered')} · Correct answer: ${escapeHtml(q.correct_answer)}</p><p><b>Explanation:</b> ${escapeHtml(q.explanation)}</p>${q.example?`<p><b>Example:</b> ${escapeHtml(q.example)}</p>`:''}${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}</div>`;});
+      html+=`<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:20px"><button class="btn btn-primary" onclick="retakeQuiz()">Try this quiz again</button><button class="btn btn-light" onclick="showGuide()">Return to study guide</button><button class="btn btn-light" onclick="showModes()">Choose another mode</button></div></div>`;
+      $('resultsContent').innerHTML=html;
+    }
+    window.retakeQuiz=()=>{answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();};
+
+    checkStatus();
+  </script>
+</body>
+</html>

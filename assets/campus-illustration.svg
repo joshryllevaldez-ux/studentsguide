@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 330" role="img" aria-label="Illustrated modern university campus with palm trees and books">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8eeff"/><stop offset="1" stop-color="#f7fbff"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9ed4ff"/><stop offset="1" stop-color="#4389da"/></linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dbe9f7"/></linearGradient>
+  </defs>
+  <rect width="1200" height="330" rx="25" fill="url(#sky)"/>
+  <circle cx="1030" cy="70" r="34" fill="#ffcf59" opacity=".8"/>
+  <path d="M0 250 Q160 205 300 245 T610 235 T930 240 T1200 215 V330 H0Z" fill="#d6eaff"/>
+  <path d="M180 255V145h175v110M355 255V105h420v150M775 255V145h230v110" fill="url(#wall)" stroke="#b8cfe8" stroke-width="3"/>
+  <path d="M355 105 565 55l210 50" fill="#fff" stroke="#a9c5e3" stroke-width="3"/>
+  <path d="M420 112h290v143H420Z" fill="url(#glass)" opacity=".9"/>
+  <g stroke="#fff" stroke-width="6" opacity=".9"><path d="M475 115v136M535 115v136M595 115v136M655 115v136M420 165h290M420 210h290"/></g>
+  <path d="M0 270h1200v60H0Z" fill="#bcd9f2"/>
+  <path d="M170 255h850v18H170Z" fill="#8fb9e4" opacity=".55"/>
+  <g fill="#fff" stroke="#b7cde5" stroke-width="3"><path d="M210 255v-70q0-28 25-28t25 28v70M270 255v-70q0-28 25-28t25 28v70M835 255v-70q0-28 25-28t25 28v70M895 255v-70q0-28 25-28t25 28v70"/></g>
+  <g fill="#2b6fb5"><rect x="385" y="75" width="33" height="32" rx="3"/><rect x="725" y="75" width="33" height="32" rx="3"/></g>
+  <g stroke="#236b48" stroke-width="8" stroke-linecap="round" fill="none"><path d="M105 285Q115 220 115 175"/><path d="M109 184Q66 140 40 151M111 183Q84 119 93 89M116 180Q142 129 179 124M114 184Q155 159 197 169M107 182Q69 175 28 190"/></g>
+  <g stroke="#2b895b" stroke-width="12" stroke-linecap="round" fill="none"><path d="M110 176Q66 123 39 131M110 176Q83 105 94 70M114 175Q150 108 190 111M113 178Q168 148 209 161M109 178Q55 162 17 179"/></g>
+  <g stroke="#236b48" stroke-width="7" stroke-linecap="round" fill="none"><path d="M1080 286Q1082 235 1090 195"/><path d="M1090 200Q1048 156 1020 165M1090 200Q1075 135 1090 105M1094 200Q1130 150 1168 158M1092 204Q1140 181 1180 194"/></g>
+  <g stroke="#2b895b" stroke-width="12" stroke-linecap="round" fill="none"><path d="M1090 198Q1042 141 1016 149M1090 198Q1070 123 1091 91M1093 198Q1138 130 1177 145M1090 200Q1147 168 1190 182"/></g>
+  <g transform="translate(440 275)"><rect x="0" y="0" width="72" height="15" rx="4" fill="#1264df"/><rect x="8" y="-13" width="72" height="15" rx="4" fill="#f5aa35"/><rect x="16" y="-26" width="72" height="15" rx="4" fill="#8053c8"/><rect x="25" y="-39" width="72" height="15" rx="4" fill="#fff" stroke="#a9c5e3"/></g>
+  <g fill="#f8bf22"><circle cx="305" cy="55" r="4"/><circle cx="840" cy="45" r="5"/><circle cx="955" cy="120" r="3"/></g>
+  <g fill="#fff" opacity=".8"><path d="M235 55q20-30 43 0 23-16 36 6H218q4-15 17-6ZM850 88q16-24 34 0 20-13 31 5h-86q4-12 21-5Z"/></g>
+</svg>
