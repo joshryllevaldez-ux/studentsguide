@@ -614,6 +614,16 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 @media(max-width:900px){.hero-slogan-art{width:min(100%,700px);margin-inline:auto}.hero-copy-column{text-align:center}.hero-copy{margin-inline:auto}.hero-benefits,.hero-actions{justify-content:center}}
 @media(max-width:620px){.hero-slogan-art{width:112%;max-width:none;margin:0 0 10px -6%}.hero-copy-column{text-align:left}.hero-copy{margin-inline:0}.hero-benefits,.hero-actions{justify-content:flex-start}}
 
+
+/* Four-line slogan treatment and accessible hero copy */
+.hero-slogan-stack{width:min(100%,590px)!important;margin:0 0 12px!important;filter:drop-shadow(0 12px 25px #0007)!important}
+.hero-slogan-stack svg{width:100%;height:auto;display:block}
+.hero-copy{color:#e2edff!important;font-size:clamp(16px,1.25vw,18px)!important;font-weight:600!important;line-height:1.8!important;max-width:620px!important;text-shadow:0 2px 12px #020a20!important}
+.hero-copy-column{position:relative}
+.hero-copy-column .eyebrow{display:none!important}
+@media(max-width:900px){.hero-slogan-stack{width:min(100%,610px)!important;margin-inline:auto!important}.hero-copy{text-align:center;margin-inline:auto!important}}
+@media(max-width:620px){.hero-slogan-stack{width:108%!important;margin-left:-4%!important}.hero-copy{text-align:left;font-size:15px!important;line-height:1.7!important}}
+
 </style>
 </head>
 <body>
@@ -634,51 +644,34 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       <div class="container">
         <div class="hero-grid sg-hero-grid">
           <div class="hero-copy-column">
-            <div class="eyebrow"><span class="dot"></span> YOUR AI-POWERED STUDY COMPANION</div>
-            <div class="hero-slogan-art" role="img" aria-label="Struggles less. Study smart. Illustrated with a graduation cap, books, a lightbulb and a laptop.">
-              <svg viewBox="0 0 740 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            
+            <div class="hero-slogan-art hero-slogan-stack" role="img" aria-label="Struggle. Less. Study. Smart.">
+              <svg viewBox="0 0 620 440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <defs>
-                  <linearGradient id="sgStudyGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00e8ff"/><stop offset=".48" stop-color="#1684ff"/><stop offset="1" stop-color="#bd65ff"/></linearGradient>
-                  <linearGradient id="sgGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff18a"/><stop offset=".55" stop-color="#ffc928"/><stop offset="1" stop-color="#f39b00"/></linearGradient>
-                  <linearGradient id="sgBookBlue" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#318fff"/><stop offset="1" stop-color="#0644b8"/></linearGradient>
-                  <linearGradient id="sgBookPurple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bd69ff"/><stop offset="1" stop-color="#6829c9"/></linearGradient>
-                  <filter id="sgStickerShadow" x="-25%" y="-35%" width="150%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset dy="8" result="offset"/><feComponentTransfer><feFuncA type="linear" slope=".48"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                  <filter id="sgTextGlow" x="-20%" y="-40%" width="140%" height="190%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <linearGradient id="sgCyanBlue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#24f4ff"/><stop offset=".55" stop-color="#087bff"/><stop offset="1" stop-color="#0750c9"/></linearGradient>
+                  <linearGradient id="sgPurple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f17cff"/><stop offset=".55" stop-color="#bd48f5"/><stop offset="1" stop-color="#792ce5"/></linearGradient>
+                  <linearGradient id="sgBanner" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#146bfa"/><stop offset="1" stop-color="#0738a6"/></linearGradient>
+                  <linearGradient id="sgGoldLine" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffdf36"/><stop offset=".5" stop-color="#fff17a"/><stop offset="1" stop-color="#ffb800"/></linearGradient>
+                  <filter id="sgStackShadow" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/><feOffset dy="7" result="offset"/><feComponentTransfer><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 </defs>
-                <g filter="url(#sgStickerShadow)" stroke-linejoin="round">
-                  <g transform="translate(20 18) rotate(-9 76 52)">
-                    <path d="M12 45 86 9l76 35-76 38Z" fill="#063baf" stroke="#fff" stroke-width="8"/>
-                    <path d="M44 58v24q42 34 84 0V58L86 79Z" fill="#f7fbff" stroke="#0a347e" stroke-width="5"/>
-                    <path d="M86 43v43" stroke="#ffc629" stroke-width="6"/><path d="M86 80q-16 17-4 32h9q12-17-5-32" fill="url(#sgGold)" stroke="#fff" stroke-width="2"/>
-                    <path d="M34 43 86 18l52 25-52 25Z" fill="url(#sgBookBlue)" stroke="#8bd9ff" stroke-width="3"/>
+                <g filter="url(#sgStackShadow)" text-anchor="middle" font-family="Manrope,Arial,sans-serif" font-weight="1000" paint-order="stroke fill" stroke-linejoin="round">
+                  <text x="310" y="100" font-size="89" letter-spacing="-5" fill="#06133c" stroke="#06133c" stroke-width="22">Struggle</text>
+                  <text x="310" y="91" font-size="89" letter-spacing="-5" fill="#fff" stroke="#fff" stroke-width="7">Struggle</text>
+                  <path d="M61 133Q310 112 559 133L542 226Q310 247 78 226Z" fill="url(#sgBanner)" stroke="#fff" stroke-width="8"/>
+                  <path d="M72 139Q310 120 548 139" fill="none" stroke="#66c8ff" stroke-width="5" opacity=".9"/>
+                  <text x="310" y="207" font-size="83" letter-spacing="-3" fill="#06133c" stroke="#06133c" stroke-width="18">Less.</text>
+                  <text x="310" y="198" font-size="83" letter-spacing="-3" fill="#fff" stroke="#fff" stroke-width="6">Less.</text>
+                  <g fill="url(#sgGoldLine)" stroke="#fff" stroke-width="4">
+                    <path d="M44 169q-22-21-5-32 18 4 25 28l-20 4Z"/><path d="M47 197q-25-5-20-24 19-8 34 15l-14 9Z"/>
+                    <path d="M576 169q22-21 5-32-18 4-25 28l20 4Z"/><path d="M573 197q25-5 20-24-19-8-34 15l14 9Z"/>
                   </g>
-                  <g transform="translate(24 242) rotate(-5 85 35)">
-                    <rect x="0" y="0" width="150" height="33" rx="10" fill="#ff9d20" stroke="#fff" stroke-width="7"/>
-                    <rect x="0" y="37" width="158" height="33" rx="10" fill="url(#sgBookPurple)" stroke="#fff" stroke-width="7"/>
-                    <rect x="8" y="5" width="9" height="23" rx="3" fill="#ffe2a1"/><rect x="8" y="42" width="9" height="23" rx="3" fill="#e2c2ff"/>
-                  </g>
-                  <g transform="translate(626 14)">
-                    <path d="M31 0v15M31 64v15M0 39h15M47 39h15M9 17l11 11M42 50l11 11M53 17 42 28M20 50 9 61" stroke="#ffc629" stroke-width="6" stroke-linecap="round"/>
-                    <circle cx="31" cy="39" r="23" fill="url(#sgGold)" stroke="#fff" stroke-width="7"/>
-                    <path d="M23 42q8-17 16 0v8H23Z" fill="#fff6c8"/><path d="M23 53h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-                  </g>
-                  <g transform="translate(613 251) rotate(5)">
-                    <rect x="0" y="0" width="95" height="57" rx="9" fill="#f4fbff" stroke="#fff" stroke-width="7"/>
-                    <rect x="8" y="8" width="79" height="40" rx="4" fill="#dff4ff"/>
-                    <path d="M18 38V29h10v9M34 38V21h10v17M50 38V14h10v24" fill="#1684ff"/>
-                    <path d="M-9 61h113l-12 10H3Z" fill="#78bfff" stroke="#fff" stroke-width="5"/>
-                  </g>
+                  <text x="310" y="322" font-size="100" letter-spacing="-5" fill="#06133c" stroke="#06133c" stroke-width="22">Study</text>
+                  <text x="310" y="313" font-size="100" letter-spacing="-5" fill="url(#sgCyanBlue)" stroke="#fff" stroke-width="7">Study</text>
+                  <text x="310" y="414" font-size="101" letter-spacing="-5" fill="#06133c" stroke="#06133c" stroke-width="22">Smart.</text>
+                  <text x="310" y="405" font-size="101" letter-spacing="-5" fill="url(#sgPurple)" stroke="#fff" stroke-width="7">Smart.</text>
                 </g>
-                <g filter="url(#sgTextGlow)" text-anchor="middle" font-family="Manrope,Arial,sans-serif" font-weight="1000" paint-order="stroke fill">
-                  <text x="366" y="139" font-size="75" letter-spacing="-4" fill="#061b50" stroke="#061b50" stroke-width="17">Struggles less.</text>
-                  <text x="366" y="130" font-size="75" letter-spacing="-4" fill="#fff" stroke="#fff" stroke-width="7">Struggles less.</text>
-                  <text x="366" y="235" font-size="78" letter-spacing="-4" fill="#061b50" stroke="#061b50" stroke-width="18">Study smart.</text>
-                  <text x="366" y="225" font-size="78" letter-spacing="-4" fill="url(#sgStudyGradient)" stroke="#fff" stroke-width="7">Study smart.</text>
-                </g>
-                <path d="M145 264Q365 310 583 256" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".9"/>
-                <path d="M145 260Q365 306 583 252" fill="none" stroke="url(#sgGold)" stroke-width="11" stroke-linecap="round"/>
-                <path d="m587 247 18 3-13 13" fill="none" stroke="#ffc629" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-                <g fill="#fff"><path d="m190 83 6 13 13 6-13 6-6 13-6-13-13-6 13-6Z"/><path d="m565 177 5 11 11 5-11 5-5 11-5-11-11-5 11-5Z"/></g>
+                <path d="M104 428Q310 457 516 428" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
+                <path d="M104 424Q310 453 516 424" fill="none" stroke="url(#sgGoldLine)" stroke-width="12" stroke-linecap="round"/>
               </svg>
             </div>
             <p class="hero-copy">Turn your lecture slides into clear study guides, simplified explanations, real examples, brainhacks, and interactive quizzes, all in one intelligent learning platform.</p>
