@@ -100,7 +100,32 @@ body{background:#f7f9fd;color:#132746}
 .modes-strip{border-radius:19px;background:linear-gradient(115deg,#0c214b,#164b9e 70%,#236bc7);box-shadow:0 16px 35px #123c7826}.footer{background:#091d40}
 @media(max-width:900px){.hero{padding:45px 0 55px}.hero-grid{grid-template-columns:1fr;max-width:650px}.hero-workflow{margin-top:28px}.upload-card{max-width:none}.hero h1{font-size:clamp(46px,9vw,64px)}}
 @media(max-width:620px){.topbar{height:65px}.brand{font-size:17px}.hero{padding:30px 0 45px}.hero-kicker-row{margin-bottom:20px}.hero h1{font-size:46px;letter-spacing:-2.5px}.hero-copy{font-size:13px}.hero-workflow{margin-top:28px}.workflow-steps{gap:6px}.workflow-step{grid-template-columns:31px 1fr;column-gap:6px}.workflow-icon{width:31px;height:31px;border-radius:9px}.workflow-step b{font-size:9px}.workflow-step small{font-size:8px}.workflow-arrow{font-size:12px}.upload-card{padding:17px}.dropzone{min-height:190px}.section{padding:55px 0}}
-  </style>
+  
+/* Refined academic technology visual language */
+.hero{isolation:isolate}
+.hero:after{content:"";position:absolute;z-index:-1;right:-145px;bottom:-245px;width:580px;height:580px;border:1px solid rgba(37,105,190,.10);border-radius:50%;box-shadow:0 0 0 38px rgba(37,105,190,.025),0 0 0 82px rgba(37,105,190,.02),0 0 0 130px rgba(37,105,190,.015);pointer-events:none}
+.hero-grid>div:first-child{position:relative}
+.hero-grid>div:first-child:after{content:"";position:absolute;z-index:-1;left:-65px;top:42%;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(69,139,223,.10),transparent 70%);filter:blur(5px)}
+.upload-card{isolation:isolate;min-height:460px}
+.upload-card:after{content:"";position:absolute;right:-100px;top:30px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(206,226,252,.72),rgba(235,244,255,.32) 54%,transparent 70%);z-index:-1;pointer-events:none}
+.upload-illustration{position:absolute;right:13px;top:52px;width:160px;height:125px;opacity:.66;pointer-events:none;z-index:0}
+.upload-illustration svg{width:100%;height:100%}
+.upload-card .card-head,.upload-card .dropzone,.upload-card .file-line,.upload-card .full,.upload-card .status-line,.upload-card .api-notice,.upload-card .privacy-note{position:relative;z-index:1}
+.upload-card .card-head{padding-right:105px;min-height:43px}
+.dropzone{position:relative;overflow:hidden}
+.dropzone:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 48%,rgba(255,255,255,.55) 49%,transparent 50%);opacity:.6;pointer-events:none}
+.dropzone>*{position:relative}
+.hero-kicker{display:inline-flex;align-items:center}
+.hero-kicker:after{content:"";display:inline-block;width:5px;height:5px;margin-left:9px;border-radius:50%;background:#1aa879;box-shadow:0 0 0 4px #1aa87918}
+.hero h1{max-width:620px}
+.workflow-icon{box-shadow:0 5px 13px rgba(28,75,132,.07);border:1px solid rgba(130,165,211,.18)}
+.feature{position:relative;overflow:hidden}
+.feature:after{content:"";position:absolute;right:-30px;top:-35px;width:105px;height:105px;border:1px solid #e5edf7;border-radius:50%;box-shadow:0 0 0 13px #f8fbff}
+.feature-icon{position:relative;z-index:1}
+.feature h3,.feature p{position:relative;z-index:1}
+@media(max-width:620px){.upload-illustration{width:105px;height:90px;right:7px;top:55px;opacity:.48}.upload-card .card-head{padding-right:75px}.upload-card{min-height:0}}
+
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -127,7 +152,24 @@ body{background:#f7f9fd;color:#132746}
             <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()">Upload a lecture <span>↗</span></button><button class="btn btn-light" onclick="loadSamplePreview()">Explore sample experience</button></div><div class="hero-workflow" aria-label="How StudentsGUIDE works"><div class="workflow-heading"><span>YOUR LECTURE, REIMAGINED</span><i>01 — 03</i></div><div class="workflow-steps"><div class="workflow-step"><span class="workflow-icon ppt-symbol">P</span><b>Upload slides</b><small>Your lecture, in</small></div><span class="workflow-arrow">→</span><div class="workflow-step"><span class="workflow-icon guide-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5c3.2-1.2 5.8-.7 8 1.3v13c-2.2-2-4.8-2.5-8-1.3zM20 5.5c-3.2-1.2-5.8-.7-8 1.3v13c2.2-2 4.8-2.5 8-1.3z"/></svg></span><b>Understand more</b><small>Examples + brainhacks</small></div><span class="workflow-arrow">→</span><div class="workflow-step"><span class="workflow-icon quiz-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3.5h10A2.5 2.5 0 0 1 19.5 6v15H4.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="m8 11 2.2 2.2L16 7.5M8 17h8"/></svg></span><b>Test yourself</b><small>Practice at your pace</small></div></div></div>
           </div>
           <div class="upload-card" id="upload">
-            <div class="card-head"><div class="card-title">Create your study guide</div><span class="small-pill">POWERPOINT TO PDF</span></div>
+            <div class="card-head"><div class="card-title">Create your study guide</div><span class="small-pill">POWERPOINT TO PDF</span></div><div class="upload-illustration" aria-hidden="true">
+  <svg viewBox="0 0 260 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="91" r="73" stroke="#B7D3F8" stroke-width="1.2" stroke-dasharray="4 6"/>
+    <circle cx="150" cy="91" r="52" fill="#F0F6FF" stroke="#D6E6FA"/>
+    <path d="M90 78c18-10 37-9 58 4v55c-21-13-40-14-58-4V78Z" fill="#fff" stroke="#397ED8" stroke-width="2"/>
+    <path d="M206 78c-18-10-37-9-58 4v55c21-13 40-14 58-4V78Z" fill="#E7F1FF" stroke="#397ED8" stroke-width="2"/>
+    <path d="M150 82v55" stroke="#397ED8" stroke-width="2"/>
+    <path d="M102 91c11-4 22-3 33 2M102 103c11-4 22-3 33 2M168 93c11-5 22-5 33-1M168 105c11-5 22-5 33-1" stroke="#8BB6EB" stroke-width="2" stroke-linecap="round"/>
+    <path d="m150 23 8 14 16 3-12 11 3 16-15-8-15 8 3-16-12-11 16-3 8-14Z" fill="#F7C95B" stroke="#E4AF32"/>
+    <circle cx="66" cy="48" r="7" fill="#E6F1FF" stroke="#7FADE8"/>
+    <circle cx="225" cy="137" r="6" fill="#DFF3EB" stroke="#58A988"/>
+    <path d="M66 55v21h18M219 137h-18v-18" stroke="#9ABDE9" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="30" y="116" width="47" height="34" rx="7" fill="#F4F8FE" stroke="#BDD4F1"/>
+    <path d="M39 139v-9m9 9v-15m9 15v-11" stroke="#4386D9" stroke-width="3" stroke-linecap="round"/>
+    <rect x="202" y="28" width="34" height="25" rx="6" fill="#F2F7FF" stroke="#C6D9F2"/>
+    <path d="M210 44v-6m7 6V33m7 11v-8" stroke="#4C8DDD" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+</div>
             <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop a PowerPoint file">
               <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
               <strong>Drag & drop your lecture slides here</strong>
