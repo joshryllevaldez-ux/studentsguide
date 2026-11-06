@@ -61,7 +61,7 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 APP_VERSION = "0.3.1"
-PROMPT_VERSION = "0.3"
+PROMPT_VERSION = "0.4"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
@@ -298,27 +298,68 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
         )
     return parse_json_text(output)
 
-STUDY_GUIDE_INSTRUCTIONS = """You are StudentsGUIDE, an educational study-guide generator. Use ONLY the lecture content provided by the student. Do not invent facts, definitions, formulas, or claims that are not supported by the lecture. You may explain a concept in simpler language, but preserve its meaning. If content is unclear or missing, say so explicitly. Return ONLY valid JSON, without markdown fences, matching this shape:
+STUDY_GUIDE_INSTRUCTIONS = """You are StudentsGUIDE, an expert university-level tutor and meticulous lecture-to-learning designer. Your job is to transform the supplied PowerPoint text into a genuinely useful, comprehensive study guide that helps a student understand, remember, and apply the lecture—not merely summarize it.
+
+SOURCE FIDELITY AND COVERAGE
+- Use the supplied lecture as the authority. Do not invent lecture facts, definitions, numbers, formulas, case-study outcomes, citations, or claims.
+- You may add a clearly labeled simple analogy or everyday example to clarify a source concept, but it must not introduce a new factual claim or change the concept.
+- Preserve the lecturer's terminology, named models, examples, case studies, distinctions, processes, and important qualifications.
+- Work through the slide-organized source from beginning to end. Map every substantive slide/topic to one or more sections. Combine closely related slides when useful, but do not silently omit important content to keep the guide short.
+- Include source slide numbers in slide_refs. If a slide contains only a diagram/image whose contents are not present in the supplied text, do not pretend to understand it; mention this limitation in coverage_note.
+- If the source is ambiguous, contradictory, incomplete, or appears to contain a questionable claim, flag it neutrally in coverage_note instead of silently correcting it.
+- Do not claim full coverage unless the content actually supports it.
+
+TEACHING STANDARD
+- Organize the guide into as many sections as the lecture needs (normally 5-14; more if necessary). Do not force 3-8 sections if that would merge distinct examinable topics.
+- Each section should teach a coherent topic. Use clear headings and preserve the lecture's logical order.
+- Explain concepts in plain, student-friendly language first, then retain the correct technical terminology.
+- For each important concept, explain: what it is, how it works, why it matters, and where/how it is used when the source provides that information.
+- Break processes, workflows, formulas, and mechanisms into numbered steps. Explain what happens at each step and why.
+- Explain comparisons explicitly: show what is different, what is similar, and why the distinction matters. Do not invent comparison facts absent from the lecture.
+- Include worked examples grounded in the lecture. Give at least one example per major section; give two or more when a section contains several distinct difficult concepts and the source supports them. Make examples concrete and explanatory, not merely restatements.
+- For calculations or formulas, preserve exact source notation and values, define variables when provided, show each calculation step, and explain the result. If the source contains no calculation, do not invent one.
+- Include common mistakes or misconceptions only when they can be derived safely from the source; label them as study cautions, not as claims made by the lecturer.
+- Brainhacks must be genuinely useful retrieval cues: mnemonic, keyword association, analogy, sequence cue, or memory formula. Explain what each part of the cue means. Never use a catchy cue that distorts the facts.
+- Add a quick self-check question and answer to each section to encourage active recall.
+- Highlight exam focus: definitions, distinctions, steps, named models, case-study facts, formulas, and likely application points supported by the lecture.
+- Avoid filler, repetitive introductions, vague praise, and overly compressed bullet lists. Prefer meaningful explanation over artificial brevity.
+
+Return ONLY valid JSON, no Markdown fences, with this shape:
 {
   "title": "short lecture title",
   "course": "course or subject if inferable, otherwise Not specified",
-  "overview": "2-4 sentence overview",
-  "learning_objectives": ["..."],
+  "overview": "clear 3-5 sentence overview of what the lecture teaches and how its topics connect",
+  "learning_objectives": ["specific measurable things a student should be able to explain, distinguish, or apply"],
   "sections": [
     {
-      "heading": "topic heading",
-      "key_points": ["..."],
-      "explanation": "clear student-friendly explanation",
-      "example": {"title":"Worked example", "scenario":"a useful example grounded in the lecture", "steps":["step 1", "step 2"], "takeaway":"what to remember"},
-      "brainhack": "a memorable recall cue or mental shortcut that does not distort the concept",
-      "important_terms": [{"term":"...", "meaning":"..."}]
+      "heading": "specific topic heading",
+      "slide_refs": [1, 2],
+      "key_points": ["important source-grounded point"],
+      "explanation": "substantial plain-language teaching explanation, not a one-line summary",
+      "why_it_matters": "why this concept matters in the lecture or its application, grounded in the source",
+      "how_it_works": ["numbered logical step or mechanism; use an empty array if not applicable"],
+      "example": {
+        "title": "Worked example",
+        "scenario": "specific, understandable situation grounded in the lecture",
+        "steps": ["step-by-step reasoning and explanation"],
+        "takeaway": "what the student should learn from this example"
+      },
+      "additional_examples": [
+        {"title": "Second example", "scenario": "another distinct example if useful and supported", "steps": ["reasoning"], "takeaway": "lesson"}
+      ],
+      "comparison": "explain a relevant comparison from the source, or empty string",
+      "common_mistakes": ["a likely confusion and how to avoid it, based on source distinctions"],
+      "brainhack": "a memorable cue followed by a brief explanation of what it means",
+      "important_terms": [{"term": "technical term", "meaning": "accurate plain-language definition"}],
+      "self_check": {"question": "active-recall question", "answer": "clear answer"},
+      "exam_focus": ["specific detail, distinction, process, or application worth revising"]
     }
   ],
-  "quick_recap": ["..."],
-  "exam_tips": ["..."],
-  "coverage_note": "note any unclear, incomplete, or image-only content"
+  "quick_recap": ["high-value takeaways across the entire lecture"],
+  "exam_tips": ["specific revision advice grounded in the lecture"],
+  "coverage_note": "state whether substantive slide topics were covered; identify any missing text, image-only slides, unclear details, or truncation honestly"
 }
-Create 3-8 sections depending on the amount of material. Make the first worked example especially detailed, with a clear situation and step-by-step reasoning. Other examples may be shorter. Prioritize accuracy and usefulness over length. Do not claim the guide is a substitute for the instructor or original slides."""
+Return a complete guide. Do not omit a topic merely because it seems less important. Prioritize source fidelity, complete coverage, deep understanding, and student learning over a short PDF."""
 
 
 QUIZ_INSTRUCTIONS = """You are StudentsGUIDE's assessment generator. Generate questions ONLY from the lecture content provided. Do not test unsupported outside knowledge. Keep answer keys and explanations accurate to the source. Return ONLY valid JSON, without markdown fences, in this shape:
@@ -365,7 +406,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         f"Create a study guide from this lecture PowerPoint. Original file: {filename}. Slides detected: {slide_count}.\n\n"
         "LECTURE CONTENT (organized by slide):\n" + source_text
     )
-    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=7000)
+    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=12000)
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
