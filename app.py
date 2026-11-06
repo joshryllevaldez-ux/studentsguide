@@ -41,7 +41,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 ASSET_DIR = os.path.join(BASE_DIR, "assets")
-MAX_UPLOAD_MB = max(1, int(os.getenv("MAX_UPLOAD_MB", "20")))
+MAX_UPLOAD_MB = max(1, int(os.getenv("MAX_UPLOAD_MB", "50")))
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 MAX_SOURCE_CHARS = 55_000
 MAX_REQUEST_BYTES = (MAX_UPLOAD_MB + 2) * 1024 * 1024
@@ -356,7 +356,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         raise HTTPException(status_code=400, detail="Please upload a PowerPoint .pptx file.")
     data = await file.read()
     if len(data) > MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=413, detail="The file is larger than 20 MB. Please upload a smaller PowerPoint.")
+        raise HTTPException(status_code=413, detail=f"The file is larger than {MAX_UPLOAD_MB} MB. Please upload a smaller PowerPoint.")
     if not data:
         raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
