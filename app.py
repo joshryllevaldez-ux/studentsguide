@@ -506,97 +506,146 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
 
 
 def make_pdf(guide: dict[str, Any]) -> bytes:
+    """Create a branded, visually structured, print-friendly study guide."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=A4, rightMargin=19*mm, leftMargin=19*mm,
-        topMargin=18*mm, bottomMargin=18*mm,
+        buffer, pagesize=A4, rightMargin=18*mm, leftMargin=18*mm,
+        topMargin=17*mm, bottomMargin=19*mm,
         title=str(guide.get("title", "StudentsGUIDE Study Guide")),
         author="StudentsGUIDE.com",
     )
-    navy = colors.HexColor("#142F69")
-    blue = colors.HexColor("#087CEB")
-    pale = colors.HexColor("#EAF3FF")
+    navy = colors.HexColor("#102D69")
+    blue = colors.HexColor("#1264DF")
+    sky = colors.HexColor("#EAF4FF")
+    pale = colors.HexColor("#F4F8FF")
+    gold = colors.HexColor("#FFF6D9")
+    ink = colors.HexColor("#243653")
+    muted = colors.HexColor("#657894")
+    green = colors.HexColor("#EAF8F1")
+    line = colors.HexColor("#D8E6F7")
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="SGTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=23, leading=28, textColor=navy, alignment=TA_LEFT, spaceAfter=8))
-    styles.add(ParagraphStyle(name="SGSub", parent=styles["Normal"], fontName="Helvetica", fontSize=9, leading=13, textColor=colors.HexColor("#5E6E86"), spaceAfter=10))
-    styles.add(ParagraphStyle(name="SGH1", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=navy, spaceBefore=14, spaceAfter=7, keepWithNext=True))
-    styles.add(ParagraphStyle(name="SGH2", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=10.5, leading=14, textColor=blue, spaceBefore=7, spaceAfter=3, keepWithNext=True))
-    styles.add(ParagraphStyle(name="SGBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=9.3, leading=14, textColor=colors.HexColor("#263348"), spaceAfter=6))
-    styles.add(ParagraphStyle(name="SGSmall", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#34445D"), spaceAfter=4))
+    styles.add(ParagraphStyle(name="SGCoverTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=27, leading=32, textColor=navy, alignment=TA_LEFT, spaceAfter=8))
+    styles.add(ParagraphStyle(name="SGSub", parent=styles["Normal"], fontName="Helvetica", fontSize=8.5, leading=12, textColor=muted, spaceAfter=7))
+    styles.add(ParagraphStyle(name="SGH1", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=navy, spaceBefore=12, spaceAfter=7, keepWithNext=True))
+    styles.add(ParagraphStyle(name="SGH2", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=9.5, leading=13, textColor=blue, spaceBefore=7, spaceAfter=4, keepWithNext=True))
+    styles.add(ParagraphStyle(name="SGBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=9, leading=13.5, textColor=ink, spaceAfter=5))
+    styles.add(ParagraphStyle(name="SGSmall", parent=styles["BodyText"], fontName="Helvetica", fontSize=8, leading=11.5, textColor=muted, spaceAfter=3))
+    styles.add(ParagraphStyle(name="SGCard", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.4, leading=12, textColor=ink, spaceAfter=2))
+    styles.add(ParagraphStyle(name="SGLabel", parent=styles["BodyText"], fontName="Helvetica-Bold", fontSize=8, leading=10, textColor=navy, spaceAfter=3))
 
     def P(value: Any, style: str = "SGBody") -> Paragraph:
         return Paragraph(html.escape(str(value or "")).replace("\n", "<br/>"), styles[style])
 
+    def bullets(items: Any, style: str = "SGSmall") -> list[Any]:
+        return [P("•  " + str(item), style) for item in (items or [])]
+
+    def panel(label: str, body: Any, bg=sky, accent=blue) -> Table:
+        content = [[P(label.upper(), "SGLabel")], [P(body, "SGCard")]]
+        t = Table(content, colWidths=[doc.width])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,-1), bg),
+            ("BOX", (0,0), (-1,-1), 0.6, line),
+            ("LINEBEFORE", (0,0), (0,-1), 3, accent),
+            ("LEFTPADDING", (0,0), (-1,-1), 10),
+            ("RIGHTPADDING", (0,0), (-1,-1), 10),
+            ("TOPPADDING", (0,0), (-1,-1), 6),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ]))
+        return t
+
     story: list[Any] = []
     logo_path = os.path.join(ASSET_DIR, "studentsguide-brand-pdf.jpg")
     if os.path.exists(logo_path):
-        img = RLImage(logo_path, width=172*mm, height=57.3*mm)
+        img = RLImage(logo_path, width=174*mm, height=58*mm)
         img.hAlign = "CENTER"
-        story.extend([img, Spacer(1, 6)])
-    story.append(P(guide.get("title", "Study Guide"), "SGTitle"))
+        story.extend([img, Spacer(1, 7)])
+    title = str(guide.get("title", "Your Study Guide"))
     meta = f"{guide.get('course', 'Course not specified')}  •  {guide.get('source_filename', 'Uploaded lecture')}  •  {guide.get('slide_count', '')} slides"
-    story.append(P(meta, "SGSub"))
-    story.append(P("STUDY GUIDE OVERVIEW", "SGH2"))
-    story.append(P(guide.get("overview", "A structured review of the uploaded lecture.")))
+    cover = Table([[P("YOUR LECTURE, MADE CLEAR", "SGLabel")], [P(title, "SGCoverTitle")], [P(meta, "SGSub")]], colWidths=[doc.width])
+    cover.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), sky), ("BOX", (0,0), (-1,-1), 0.8, line),
+        ("LINEBEFORE", (0,0), (0,-1), 5, blue),
+        ("LEFTPADDING", (0,0), (-1,-1), 13), ("RIGHTPADDING", (0,0), (-1,-1), 13),
+        ("TOPPADDING", (0,0), (-1,-1), 9), ("BOTTOMPADDING", (0,0), (-1,-1), 7),
+    ]))
+    story.extend([cover, Spacer(1, 12), P("STUDY GUIDE OVERVIEW", "SGH2"), P(guide.get("overview", "A structured review of the uploaded lecture."))])
 
     objectives = guide.get("learning_objectives") or []
     if objectives:
-        story.append(P("What you should understand", "SGH2"))
-        for item in objectives:
-            story.append(P("• " + str(item), "SGSmall"))
+        story.extend([P("WHAT YOU SHOULD BE ABLE TO DO", "SGH2"), panel("Learning objectives", "<br/>".join("•  " + str(x) for x in objectives), bg=pale)])
 
-    for index, section in enumerate(guide.get("sections") or [], start=1):
-        block: list[Any] = [P(f"{index}. {section.get('heading', 'Key topic')}", "SGH1")]
+    sections = guide.get("sections") or []
+    if sections:
+        story.append(P("YOUR LECTURE ROADMAP", "SGH1"))
+        roadmap = Table([[P(f"<b>{i:02d}</b>  {s.get('heading', 'Topic')}", "SGCard") for i,s in enumerate(sections,1)]], colWidths=[doc.width/len(sections)]*len(sections))
+        roadmap.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),pale),("BOX",(0,0),(-1,-1),0.5,line),("INNERGRID",(0,0),(-1,-1),0.4,line),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),5),("RIGHTPADDING",(0,0),(-1,-1),5),("TOPPADDING",(0,0),(-1,-1),7),("BOTTOMPADDING",(0,0),(-1,-1),7)]))
+        story.extend([roadmap, Spacer(1, 5)])
+
+    for index, section in enumerate(sections, start=1):
+        block: list[Any] = []
+        heading = f"{index:02d}  {section.get('heading', 'Key topic')}"
+        head = Table([[P(heading, "SGH1"), P("SLIDES " + ", ".join(map(str, section.get("slide_refs") or [])), "SGSmall")]], colWidths=[doc.width*0.76, doc.width*0.24])
+        head.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),sky),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),8),("RIGHTPADDING",(0,0),(-1,-1),8),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4)]))
+        block.extend([Spacer(1, 5), head])
         if section.get("key_points"):
-            block.append(P("Key points", "SGH2"))
-            for point in section.get("key_points", []):
-                block.append(P("• " + str(point), "SGSmall"))
+            block.extend([P("KEY IDEAS", "SGH2"), *bullets(section.get("key_points"))])
         if section.get("explanation"):
-            block.extend([P("Simplified explanation", "SGH2"), P(section["explanation"])])
+            block.extend([P("UNDERSTAND THE CONCEPT", "SGH2"), P(section["explanation"])])
+        if section.get("why_it_matters"):
+            block.append(panel("Why it matters", section["why_it_matters"], bg=pale, accent=blue))
+        if section.get("how_it_works"):
+            block.append(P("HOW IT WORKS", "SGH2"))
+            block.extend([P(f"{n}.  {step}", "SGSmall") for n,step in enumerate(section["how_it_works"],1)])
+        if section.get("comparison"):
+            block.append(panel("Compare and distinguish", section["comparison"], bg=sky, accent=blue))
         example = section.get("example") or {}
         if example:
-            block.append(P(example.get("title", "Example"), "SGH2"))
-            if example.get("scenario"):
-                block.append(P(example["scenario"]))
-            for step_no, step in enumerate(example.get("steps") or [], start=1):
-                block.append(P(f"{step_no}. {step}", "SGSmall"))
+            exbody = [P(example.get("scenario", ""), "SGCard")]
+            exbody.extend(P(f"<b>Step {n}.</b> {step}", "SGCard") for n,step in enumerate(example.get("steps") or [],1))
             if example.get("takeaway"):
-                block.append(P("Takeaway: " + str(example["takeaway"]), "SGSmall"))
+                exbody.append(P("<b>Takeaway:</b> " + str(example["takeaway"]), "SGCard"))
+            block.extend([P(example.get("title", "WORKED EXAMPLE"), "SGH2"), panel("Let's work through it", "<br/>".join(x.getPlainText() for x in exbody), bg=green, accent=colors.HexColor("#16865D"))])
+        for ex in section.get("additional_examples") or []:
+            extra = [str(ex.get("scenario",""))] + [f"Step {n}. {v}" for n,v in enumerate(ex.get("steps") or [],1)]
+            if ex.get("takeaway"): extra.append("Takeaway: " + str(ex["takeaway"]))
+            block.append(panel(ex.get("title", "Additional example"), "<br/>".join(extra), bg=pale, accent=blue))
+        if section.get("common_mistakes"):
+            block.extend([P("WATCH OUT FOR THESE", "SGH2"), *bullets(section["common_mistakes"])])
         if section.get("brainhack"):
-            hack = Table([[P("BRAIN HACK", "SGH2")], [P(section["brainhack"], "SGSmall")]], colWidths=[doc.width])
-            hack.setStyle(TableStyle([
-                ("BACKGROUND", (0,0), (-1,-1), pale), ("BOX", (0,0), (-1,-1), 0.5, colors.HexColor("#C8DDF7")),
-                ("LEFTPADDING", (0,0), (-1,-1), 9), ("RIGHTPADDING", (0,0), (-1,-1), 9),
-                ("TOPPADDING", (0,0), (-1,-1), 4), ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-            ]))
-            block.extend([Spacer(1, 3), hack, Spacer(1, 5)])
+            block.append(panel("BRAINHACK · MEMORY CUE", section["brainhack"], bg=gold, accent=colors.HexColor("#E0A800")))
         terms = section.get("important_terms") or []
         if terms:
-            block.append(P("Important terms", "SGH2"))
-            for term in terms:
-                block.append(P(f"{term.get('term', '')}: {term.get('meaning', '')}", "SGSmall"))
+            block.append(P("IMPORTANT TERMS", "SGH2"))
+            term_rows = [[P("<b>TERM</b>", "SGSmall"), P("<b>MEANING</b>", "SGSmall")]]
+            term_rows.extend([[P(t.get("term",""),"SGCard"),P(t.get("meaning",""),"SGCard")] for t in terms])
+            term_table = Table(term_rows, colWidths=[doc.width*0.29,doc.width*0.71], repeatRows=1)
+            term_table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),pale),("BOX",(0,0),(-1,-1),0.5,line),("INNERGRID",(0,0),(-1,-1),0.35,line),("VALIGN",(0,0),(-1,-1),"TOP"),("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),6),("TOPPADDING",(0,0),(-1,-1),5),("BOTTOMPADDING",(0,0),(-1,-1),5)]))
+            block.append(term_table)
+        check = section.get("self_check") or {}
+        if check.get("question"):
+            block.append(panel("Quick self-check", check["question"] + ("<br/><b>Answer:</b> " + str(check.get("answer","")) if check.get("answer") else ""), bg=sky, accent=blue))
+        if section.get("exam_focus"):
+            block.extend([P("EXAM FOCUS", "SGH2"), *bullets(section["exam_focus"])])
         story.append(KeepTogether(block))
 
-    for heading, key in [("Quick recap", "quick_recap"), ("Exam tips", "exam_tips")]:
+    for heading, key in [("QUICK RECAP", "quick_recap"), ("EXAM SMART: REVISION TIPS", "exam_tips")]:
         values = guide.get(key) or []
         if values:
-            story.append(P(heading, "SGH1"))
-            for value in values:
-                story.append(P("• " + str(value), "SGSmall"))
+            story.extend([P(heading, "SGH1"), *bullets(values)])
     if guide.get("coverage_note"):
-        story.append(P("Content coverage note", "SGH2"))
-        story.append(P(guide["coverage_note"], "SGSmall"))
-    story.append(Spacer(1, 10))
-    story.append(P("Generated by StudentsGUIDE.com • Struggles less, study smart.", "SGSub"))
+        story.append(panel("Coverage and source notes", guide["coverage_note"], bg=pale, accent=muted))
+    story.extend([Spacer(1, 10), P("StudentsGUIDE.com  •  Struggles less, study smart.", "SGSub")])
 
     def footer(canvas, document):
         canvas.saveState()
-        canvas.setStrokeColor(colors.HexColor("#D9E5F3"))
-        canvas.line(19*mm, 14*mm, A4[0]-19*mm, 14*mm)
-        canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(colors.HexColor("#71809A"))
-        canvas.drawString(19*mm, 9*mm, "StudentsGUIDE.com")
-        canvas.drawRightString(A4[0]-19*mm, 9*mm, f"Page {document.page}")
+        canvas.setFillColor(navy)
+        canvas.rect(0, A4[1]-7*mm, A4[0], 7*mm, fill=1, stroke=0)
+        canvas.setStrokeColor(line)
+        canvas.line(18*mm, 14*mm, A4[0]-18*mm, 14*mm)
+        canvas.setFont("Helvetica-Bold", 7.5)
+        canvas.setFillColor(muted)
+        canvas.drawString(18*mm, 9*mm, "STUDENTSGUIDE.COM  •  STRUGGLES LESS, STUDY SMART")
+        canvas.drawRightString(A4[0]-18*mm, 9*mm, f"PAGE {document.page}")
         canvas.restoreState()
 
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
