@@ -578,6 +578,34 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 .status-line{color:#c5d5f1!important}
 .privacy-note{color:#aebfe0!important}
 
+
+/* Instant quiz answer feedback */
+.answer-option.answer-correct{background:linear-gradient(110deg,#0c3d35,#105342)!important;border:1.5px solid #10d99a!important;color:#eafff6!important;box-shadow:0 0 0 2px #10d99a22,0 8px 22px #10d99a18!important}
+.answer-option.answer-correct .option-letter{background:#10d99a!important;color:#052b22!important}
+.answer-option.answer-wrong{background:linear-gradient(110deg,#4b1d32,#5a2332)!important;border:1.5px solid #ff536b!important;color:#fff0f2!important;box-shadow:0 0 0 2px #ff536b22,0 8px 22px #ff536b18!important}
+.answer-option.answer-wrong .option-letter{background:#ff536b!important;color:#fff!important}
+.answer-option:disabled{opacity:1!important;cursor:default!important}
+.answer-state-icon{margin-left:auto;font-size:17px;font-weight:900}
+.answer-correct .answer-state-icon{color:#53f0b6!important}.answer-wrong .answer-state-icon{color:#ff8294!important}
+.instant-feedback{margin-top:18px;padding:18px;border-radius:17px;border:1px solid #34547f;background:linear-gradient(145deg,#10234a,#0a1735);color:#eaf2ff;box-shadow:0 14px 32px #0003}
+.feedback-correct{border-color:#10d99a!important;box-shadow:0 0 0 1px #10d99a22,0 14px 32px #0003!important}
+.feedback-wrong{border-color:#ff536b!important;box-shadow:0 0 0 1px #ff536b22,0 14px 32px #0003!important}
+.feedback-title{font-size:22px;font-weight:900;letter-spacing:-.4px;color:#55efb5;margin-bottom:4px}
+.feedback-wrong .feedback-title{color:#ff8495!important}
+.feedback-status{font-size:12px;line-height:1.6;color:#c3d4ed;margin-bottom:15px}
+.feedback-answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 16px}
+.feedback-answers>div{padding:12px;border-radius:12px;background:#ffffff09;border:1px solid #ffffff16;min-width:0}
+.feedback-answers span{display:block;font-size:9px;letter-spacing:.8px;font-weight:900;color:#9fb8dc;margin-bottom:6px}
+.feedback-answers strong{display:block;color:#f4f8ff;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.feedback-answers>div:last-child{border-color:#10d99a55;background:#10d99a0d}
+.feedback-explanation{border-top:1px solid #ffffff1a;padding-top:13px;color:#dce8fa}
+.feedback-explanation>b{font-size:13px;color:#fff}.feedback-explanation p{font-size:12px;line-height:1.75;color:#c8d8ef;margin:6px 0 0}
+.instant-feedback .explanation-example{background:#132c52!important;border:1px solid #34547f!important;color:#eaf2ff!important}
+.instant-feedback .brain-box{background:linear-gradient(135deg,#30244d,#1d1a3d)!important;border:1px solid #9b6bda!important;border-left:4px solid #d946ef!important;color:#f2e8ff!important}
+.instant-feedback .brain-box b{color:#e5b7ff!important}
+.feedback-source{font-size:10px;color:#aebfe0;margin-top:12px}
+@media(max-width:620px){.feedback-answers{grid-template-columns:1fr}.feedback-title{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -853,14 +881,26 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     function normalizeAnswer(q,value){if(q.type==='true_false')return String(value).toLowerCase()===String(q.correct_answer).toLowerCase();return String(value).toUpperCase()===String(q.correct_answer).toUpperCase();}
     function renderQuestion(){
       const q=currentQuiz.questions[currentQuestion];const total=currentQuiz.questions.length;const selected=answers[q.id]||'';const typeLabel=q.type==='true_false'?'TRUE / FALSE':q.type==='scenario'?'SCENARIO QUESTION':'MULTIPLE CHOICE';
-      $('quizTitle').textContent=currentQuiz.quiz_title||'Interactive Quiz';$('quizSub').textContent=`${total} questions · Answer at your pace. You can mark a question to review it later.`;$('quizModeBadge').textContent=currentQuiz.mode||'QUIZ';
-      const correctLabel=q.type==='true_false'?String(q.correct_answer):`${q.correct_answer}`;
-      const options=(q.options||[]).map(o=>{const value=q.type==='true_false'?o.label:o.label;const active=selected===value;return `<button class="answer-option ${active?'selected':''}" onclick="selectAnswer('${escapeHtml(q.id)}','${escapeHtml(value)}')"><span class="option-letter">${escapeHtml(o.label)}</span><span>${escapeHtml(o.text)}</span></button>`;}).join('');
-      const isRevealed=revealed.has(q.id);const isFlagged=flagged.has(q.id);
-      let explain='';if(isRevealed){explain=`<div class="explanation-panel"><div class="explanation-head">✓ ANSWER & EXPLANATION · Correct answer: ${escapeHtml(correctLabel)}</div><div class="explanation-content"><p><strong>Why this is correct:</strong> ${escapeHtml(q.explanation||'Review the lecture topic to understand this answer.')}</p>${q.example?`<div class="explanation-example"><strong>Example:</strong><br>${escapeHtml(q.example)}</div>`:''}${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}${q.source_basis?`<p style="font-size:10px;color:#8492a5"><strong>Lecture connection:</strong> ${escapeHtml(q.source_basis)}</p>`:''}</div></div>`;}
-      $('quizContent').innerHTML=`<div class="quiz-head"><span class="quiz-label">${typeLabel} · ${escapeHtml(q.topic||'Lecture topic')}</span><span class="quiz-count">Question ${currentQuestion+1} of ${total}</span></div><div class="progress"><span style="width:${(currentQuestion+1)/total*100}%"></span></div>${q.context?`<div class="question-context">${escapeHtml(q.context)}</div>`:''}<div class="question-topic">${escapeHtml(q.topic||'Lecture question')}</div><h2 class="question-text">${escapeHtml(q.question)}</h2><div class="answer-options">${options}</div><div class="question-tools"><button class="text-button ${isFlagged?'active':''}" onclick="toggleFlag()">⚑ ${isFlagged?'Marked for review':'Mark to review'}</button><button class="text-button" onclick="toggleAnswer()">${isRevealed?'Hide answer':'See answer & explanation'}</button></div>${explain}<div class="reviewed-list">${currentQuiz.questions.map((item,i)=>`<button class="review-dot ${i===currentQuestion?'current':''} ${answers[item.id]?'done':''} ${flagged.has(item.id)?'flagged':''}" onclick="jumpQuestion(${i})" title="Question ${i+1}">${i+1}</button>`).join('')}</div><div class="question-tools" style="border-top:1px solid #eaf0f7;padding-top:16px;margin-top:17px"><button class="btn btn-light" onclick="previousQuestion()" ${currentQuestion===0?'disabled':''}>← Previous</button><div style="display:flex;gap:8px"><button class="btn btn-light" onclick="nextQuestion()" ${currentQuestion===total-1?'disabled':''}>Next →</button><button class="btn btn-primary" onclick="submitQuiz()">Submit quiz ✓</button></div></div>`;
+      $('quizTitle').textContent=currentQuiz.quiz_title||'Interactive Quiz';$('quizSub').textContent=`${total} questions · Choose an answer to see instant feedback, then continue.`;$('quizModeBadge').textContent=currentQuiz.mode||'QUIZ';
+      const correctOption=(q.options||[]).find(o=>String(o.label).toUpperCase()===String(q.correct_answer).toUpperCase()||String(o.text).toUpperCase()===String(q.correct_answer).toUpperCase());
+      const correctAnswerText=correctOption? `${correctOption.label}. ${correctOption.text}`:String(q.correct_answer);
+      const options=(q.options||[]).map(o=>{
+        const value=o.label;const active=selected===value;const isCorrect=String(o.label).toUpperCase()===String(q.correct_answer).toUpperCase()||String(o.text).toUpperCase()===String(q.correct_answer).toUpperCase();
+        const state=selected?(isCorrect?'answer-correct':active?'answer-wrong':''):'';
+        return `<button class="answer-option ${active?'selected':''} ${state}" onclick="selectAnswer('${escapeHtml(q.id)}','${escapeHtml(value)}')" ${selected?'disabled':''}><span class="option-letter">${escapeHtml(o.label)}</span><span>${escapeHtml(o.text)}</span>${selected&&isCorrect?'<span class="answer-state-icon">✓</span>':selected&&active?'<span class="answer-state-icon">✕</span>':''}</button>`;
+      }).join('');
+      const isRevealed=revealed.has(q.id);const isFlagged=flagged.has(q.id);const hasAnswered=!!selected;const isCorrect=hasAnswered&&normalizeAnswer(q,selected);
+      let explain='';
+      if(hasAnswered){
+        const chosenOption=(q.options||[]).find(o=>String(o.label)===String(selected));
+        const chosenText=chosenOption?`${chosenOption.label}. ${chosenOption.text}`:selected;
+        explain=`<div class="instant-feedback ${isCorrect?'feedback-correct':'feedback-wrong'}"><div class="feedback-title">${isCorrect?'✓ Great Job!':'↗ You’re close.'}</div><div class="feedback-status">${isCorrect?'That is the correct answer.':'Not quite. Review the correct answer below and use the explanation to strengthen your understanding.'}</div><div class="feedback-answers"><div><span>WHAT YOU CHOSE</span><strong>${escapeHtml(chosenText)}</strong></div><div><span>CORRECT ANSWER</span><strong>${escapeHtml(correctAnswerText)}</strong></div></div><div class="feedback-explanation"><b>Explanation</b><p>${escapeHtml(q.explanation||'Review the lecture topic to understand this answer.')}</p></div>${q.example?`<div class="explanation-example"><strong>Example:</strong><br>${escapeHtml(q.example)}</div>`:''}${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}${q.source_basis?`<p class="feedback-source"><strong>Lecture connection:</strong> ${escapeHtml(q.source_basis)}</p>`:''}</div>`;
+      }else if(isRevealed){
+        explain=`<div class="explanation-panel"><div class="explanation-head">ANSWER & EXPLANATION · Correct answer: ${escapeHtml(correctAnswerText)}</div><div class="explanation-content"><p><strong>Explanation:</strong> ${escapeHtml(q.explanation||'Review the lecture topic to understand this answer.')}</p>${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}</div></div>`;
+      }
+      $('quizContent').innerHTML=`<div class="quiz-head"><span class="quiz-label">${typeLabel} · ${escapeHtml(q.topic||'Lecture topic')}</span><span class="quiz-count">Question ${currentQuestion+1} of ${total}</span></div><div class="progress"><span style="width:${(currentQuestion+1)/total*100}%"></span></div>${q.context?`<div class="question-context">${escapeHtml(q.context)}</div>`:''}<div class="question-topic">${escapeHtml(q.topic||'Lecture question')}</div><h2 class="question-text">${escapeHtml(q.question)}</h2><div class="answer-options">${options}</div><div class="question-tools"><button class="text-button ${isFlagged?'active':''}" onclick="toggleFlag()">⚑ ${isFlagged?'Marked for review':'Mark to review'}</button>${!hasAnswered?`<button class="text-button" onclick="toggleAnswer()">${isRevealed?'Hide answer':'See answer & explanation'}</button>`:''}</div>${explain}<div class="reviewed-list">${currentQuiz.questions.map((item,i)=>`<button class="review-dot ${i===currentQuestion?'current':''} ${answers[item.id]?'done':''} ${flagged.has(item.id)?'flagged':''}" onclick="jumpQuestion(${i})" title="Question ${i+1}">${i+1}</button>`).join('')}</div><div class="question-tools" style="border-top:1px solid #29416f;padding-top:16px;margin-top:17px"><button class="btn btn-light" onclick="previousQuestion()" ${currentQuestion===0?'disabled':''}>← Previous</button><div style="display:flex;gap:8px"><button class="btn btn-light" onclick="nextQuestion()" ${currentQuestion===total-1?'disabled':''}>Next →</button><button class="btn btn-primary" onclick="submitQuiz()">Submit quiz ✓</button></div></div>`;
     }
-    window.selectAnswer=(id,value)=>{answers[id]=value;renderQuestion();};
+    window.selectAnswer=(id,value)=>{if(answers[id])return;answers[id]=value;revealed.delete(id);renderQuestion();};
     window.toggleFlag=()=>{const id=currentQuiz.questions[currentQuestion].id;if(flagged.has(id))flagged.delete(id);else flagged.add(id);renderQuestion();};
     window.toggleAnswer=()=>{const id=currentQuiz.questions[currentQuestion].id;if(revealed.has(id))revealed.delete(id);else revealed.add(id);renderQuestion();};
     window.previousQuestion=()=>{if(currentQuestion>0){currentQuestion--;renderQuestion();}};
