@@ -1,0 +1,28 @@
+
+services:
+  - type: web
+    name: studentsguide-classroom
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/status
+    autoDeployTrigger: commit
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: APP_ACCESS_PASSWORD
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-6.1-terra
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: IP_AI_GENERATION_LIMIT_PER_HOUR
+        value: "25"
+      - key: DAILY_AI_GENERATION_LIMIT
+        value: "100"
+      - key: AI_CONCURRENCY_LIMIT
+        value: "2"
+      - key: MAX_UPLOAD_MB
+        value: "20"
