@@ -19,8 +19,8 @@ def make_pptx(*slide_texts):
 
 def test_extract_pptx_text_keeps_slide_numbers_and_topics():
     source, slide_count = extract_pptx_text(make_pptx(
-        'Chapter 1' + chr(10) + 'Accounting equation',
-        'Assets = Liabilities + Equity',
+        'Chapter 1' + chr(10) + 'Accounting equation and the basic structure of financial reporting for business organizations.',
+        'Assets = Liabilities + Equity. This relationship explains how resources are financed by creditors and owners.',
     ))
     assert slide_count == 2
     assert 'SLIDE 1' in source and 'SLIDE 2' in source
