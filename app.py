@@ -298,7 +298,8 @@ async def ask_ai(
             detail="Gemini AI is not connected. The administrator must configure GEMINI_API_KEY on the hosting server.",
         )
 
-    model = GEMINI_FAST_MODEL if operation.startswith("quiz_") else GEMINI_MODEL
+    fast_quiz_operations = {"quiz_mcq_20", "quiz_mcq_10", "quiz_true_or_false_10"}
+    model = GEMINI_FAST_MODEL if operation in fast_quiz_operations else GEMINI_MODEL
     output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
         "systemInstruction": {"parts": [{"text": instructions}]},
