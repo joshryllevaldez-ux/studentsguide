@@ -19,7 +19,7 @@ def make_pptx(*slide_texts):
 
 def test_extract_pptx_text_keeps_slide_numbers_and_topics():
     source, slide_count = extract_pptx_text(make_pptx(
-        'Chapter 1\\nAccounting equation',
+        'Chapter 1' + chr(10) + 'Accounting equation',
         'Assets = Liabilities + Equity',
     ))
     assert slide_count == 2
@@ -40,7 +40,7 @@ def test_extract_pptx_text_flags_slides_without_selectable_text():
 
 def test_parse_json_text_accepts_plain_and_fenced_json():
     assert parse_json_text('{"ok": true}') == {'ok': True}
-    assert parse_json_text('```json\\n{"count": 3}\\n```') == {'count': 3}
+    assert parse_json_text('```json' + chr(10) + '{"count": 3}' + chr(10) + '```') == {'count': 3}
 
 
 def test_make_pdf_returns_a_pdf_for_topic_content():
