@@ -1,104 +1,78 @@
-# StudentsGUIDE.com — AI Application
+# StudentsGUIDE.com — AI Learning Platform
 
 **Tagline:** Struggles less, study smart.  
-**Version:** 0.2.0  
-**Project:** AIT111 Artificial Intelligence, Fall 2026–2027
+**Development version:** StudentsGUIDE 2.0 (development branch)  
+**Production branch:** main  
+**Development branch:** studentsguide-2.0-dev
 
-StudentsGUIDE is a locally run educational AI application. It takes a student's lecture PowerPoint presentation, extracts the readable slide text, and uses a Generative AI model to create a structured study guide and an interactive quiz. It runs on the student's Windows computer and opens in the default browser at a local address. Public website hosting or a purchased domain is not required for the application demonstration.
+StudentsGUIDE converts lecture PowerPoint files into structured study guides, downloadable PDFs, and lecture-grounded practice quizzes. The application uses FastAPI, a browser-based frontend, ReportLab, python-pptx, and a server-side generative AI provider.
 
-## Main features
+## Current features
 
-### PowerPoint to study guide
+### PowerPoint processing
+- Accepts .pptx uploads with configurable size limits.
+- Extracts selectable text and table cells slide by slide.
+- Retains slide numbering in the extracted source.
+- Explicitly flags slides with no selectable text and slides containing embedded images that have not been OCR-analyzed.
+- Reports truncation rather than implying that a truncated lecture was fully covered.
 
-- Drag-and-drop or browse to upload a `.pptx` file (maximum 20 MB).
-- Extracts selectable text and table text slide-by-slide.
-- Generates a structured study guide using the lecture content:
-  - Overview and learning objectives
-  - Topic sections and key points
-  - Simplified explanations
-  - Worked examples, with the first example especially detailed
-  - Brain hacks and memory cues
-  - Important terms, recap and exam tips
-- Automatically creates and downloads a branded PDF.
+### AI study guide
+- Produces topic sections, explanations, examples, memory cues, key terms, and revision points.
+- Includes source slide references where available.
+- Instructs the model to disclose unclear or unprocessed source content.
+- Stores the source text with the generated guide for lecture-based quiz generation.
 
-### Interactive quiz generator
+### PDF export
+- Begins directly with lecture topics rather than a promotional cover card.
+- Uses a restrained blue academic design, description panels, example panels, and distinct Brain Hack callouts.
+- Includes page numbering and checks for valid PDF output in automated tests.
 
-The student can choose one of the following modes:
+### Interactive quizzes
+- Supports MCQ 20, MCQ 10, True/False 10, Scenario 15, and Mixed 40.
+- Includes answer selection, instant feedback, explanations, examples, Brain Hacks, review flags, navigation, submission, scoring, and incorrect-answer review.
 
-| Mode | Question count and composition |
-|---|---:|
-| MCQ 20 | 20 multiple-choice questions |
-| MCQ 10 | 10 multiple-choice questions |
-| True or False 10 | 10 true/false questions |
-| Scenario Questions 15 | 15 applied scenario questions |
-| Mixed 40 | 16 MCQ, 12 true/false and 12 scenario questions |
+### Learning progress
+- Stores up to 20 real quiz attempts in browser local storage.
+- Displays recent attempts, question-weighted overall accuracy, and weak topics from the latest attempt.
+- Does not store sample-preview scores.
+- Progress is local to the current browser/device. It is not an account, cloud sync, or cross-device history.
 
-Quiz controls include answer selection, See Answer, full explanation, example, brain hack, Mark to Review, Previous, Next, question navigation, submission, score calculation, incorrect-answer review and retaking the quiz.
+## AI provider configuration
 
-## Run the application on Windows
+The hosted Render configuration declares OpenAI environment variables. The backend now uses OpenAI as the preferred provider and retains Gemini as a backwards-compatible local fallback.
 
-1. Download and extract the `StudentsGUIDE_AI_Application_Windows.zip` file.
-2. Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/). During installation, select **Add Python to PATH**.
-3. Open the extracted `StudentsGUIDE` folder.
-4. Double-click `start_studentsguide.bat`.
-5. On the first run, the launcher creates a Python virtual environment and installs the required packages. Internet access is needed for this first setup.
-6. Your default browser opens when the application server is ready. The application runs locally at `http://127.0.0.1:<port>`.
-7. Keep the black launcher window open while using the application. Press `CTRL+C` in that window to stop it.
+For local use:
+1. Copy `.env.example` to `.env`.
+2. Add your own API key to `OPENAI_API_KEY`.
+3. Keep the key private. Never commit `.env` or expose API keys in browser code.
+4. Install dependencies with `python -m pip install -r requirements.txt`.
+5. Run the FastAPI app with `uvicorn app:app --reload`.
 
-The launcher chooses an available local port, starting at 8000. It does not publish the app to the internet.
+The model name is configured by `OPENAI_MODEL`; use a model identifier enabled for the API account. API usage is billed separately from ChatGPT subscription usage.
 
-## Connect live AI generation
+For Render, set `OPENAI_API_KEY` in the service's environment settings. `render.yaml` declares this variable as a secret that must be supplied in the dashboard.
 
-The user must configure an OpenAI API key on the local server before using live AI generation. A ChatGPT subscription does not automatically supply API credits.
+## Development and tests
 
-1. Start StudentsGUIDE once so it creates `.env` from `.env.example`.
-2. Close StudentsGUIDE.
-3. Open `.env` in Notepad.
-4. Replace `your_api_key_here` after `OPENAI_API_KEY=` with the API key from the OpenAI developer platform.
-5. Leave `OPENAI_MODEL=gpt-6.1-terra` unless you intentionally want to use another model available to your API account.
-6. Save `.env` and run `start_studentsguide.bat` again.
+Install development dependencies and run:
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
 
-The API key is read only by the Python server. It is not included in the browser interface or returned by the status endpoint. Keep `.env private and do not share the application folder with a configured key inside it.
+The tests cover PowerPoint extraction, slide-gap warnings, JSON parsing, and PDF creation. They do not prove the factual accuracy of live model output or replace browser-based end-to-end testing.
 
-API usage is billed separately from ChatGPT subscription usage. Set API billing limits before testing.
+## Important limitations and planned work
 
-## Technology
+- Embedded images are detected but their contents are not yet OCR- or vision-analyzed. Image-only diagrams, charts, and screenshots must be reviewed against the original PowerPoint.
+- AI-generated study material and answer keys can still contain errors. Review them against the lecture before relying on them for examinations.
+- Learning progress currently uses local browser storage, not a persistent multi-user database.
+- There is no student account system, cloud study library, cross-device synchronization, or cloud file retention workflow.
+- An AI tutoring chat, spaced-repetition scheduler, timed exam simulation, robust adaptive question selection, and full OCR/diagram interpretation remain future development items.
+- Before broad public release, add a privacy-reviewed account and storage architecture, durable rate limiting, file retention/deletion controls, monitoring, abuse protection, and a security review.
 
-- Frontend: HTML, CSS and JavaScript
-- Backend: Python and FastAPI
-- PowerPoint extraction: `python-pptx`
-- Generative AI: OpenAI Responses API
-- Structured JSON output: Responses API JSON mode
-- Study guide PDF: ReportLab
-- Local launcher: Python + Uvicorn + Windows batch launcher
+## Deployment
 
-The default API model ID, `gpt-6.1-terra`, is listed in OpenAI's API model documentation. See [OpenAI API models](https://developers.openai.com/api/docs/models) and [Structured Outputs / JSON mode](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses).
+The Render service is configured for automatic deployment from commits to `main`. The 2.0 development work is isolated on `studentsguide-2.0-dev` and does not replace the live production branch until it has been reviewed and merged.
 
-## Important limits
-
-- The current PowerPoint processor extracts text and table cells. It does not run OCR on text that exists only inside screenshots or images.
-- Charts, diagrams and image-based slides may need to be checked against the original PowerPoint.
-- The AI is instructed to use only the supplied lecture content, but generated material can still contain errors. Review study guides and answer keys against the source slides before using them for assessment preparation.
-- The sample experience is illustrative preview content. It is not an AI-generated output and must not be presented as such in the AIT111 report.
-- The application does not currently include student logins, cloud storage, multiple-user accounts, analytics or public hosting.
-- A public release would require authentication, rate limits, usage quotas, file retention and deletion rules, HTTPS, monitoring, secure secrets management and a security review.
-
-## Testing and development evidence
-
-- Automated tests are in `tests/test_app.py`.
-- Run the tests with `python -m pip install -r requirements-dev.txt` followed by `python -m pytest -q`.
-- Prompt versions and planned evidence are recorded in `PROMPT_ENGINEERING_LOG.md`.
-- Real API calls and end-to-end testing with an actual course lecture must be completed after the API key is configured.
-- Do not report pending tests as passed. Record the actual course file, model, prompt version and date for each real AI test.
-
-## Project files
-
-- `app.py` — FastAPI backend, PowerPoint extraction, model requests and PDF creation
-- `static/index.html` — StudentsGUIDE interface and interactive quiz behaviour
-- `assets/` — official supplied brand banner and campus-inspired illustration
-- `run.py` — local app launcher
-- `start_studentsguide.bat` — Windows one-click launcher
-- `.env.example` — API configuration template
-- `tests/` — automated backend tests
-- `PROMPT_ENGINEERING_LOG.md` — prompt development record
-- `TESTING_CHECKLIST.md` — evaluation checklist
+Do not describe a feature as tested or deployed unless the corresponding test or deployment has actually been verified.
