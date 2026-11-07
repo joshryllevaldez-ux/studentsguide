@@ -1,4 +1,5 @@
 from io import BytesIO
+import base64
 
 from pptx import Presentation
 
@@ -73,3 +74,20 @@ def test_extract_pptx_images_returns_empty_for_text_only_slides():
     assert extract_pptx_images(make_pptx(
         'This slide contains enough readable educational text for a valid presentation.'
     )) == []
+
+
+def test_extract_pptx_images_collects_embedded_png():
+    from app import extract_pptx_images
+    png = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pWQAAAAASUVORK5CYII="
+    )
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    slide.shapes.add_picture(BytesIO(png), 0, 0)
+    output = BytesIO()
+    presentation.save(output)
+    images = extract_pptx_images(output.getvalue())
+    assert len(images) == 1
+    assert images[0]["slide"] == "1"
+    assert images[0]["mime_type"] == "image/png"
+    assert base64.b64decode(images[0]["data"]) == png
