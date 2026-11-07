@@ -957,8 +957,47 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     }
     function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
     function formatSize(bytes){return bytes<1024*1024?`${(bytes/1024).toFixed(0)} KB`:`${(bytes/1024/1024).toFixed(2)} MB`;}
+    async function readApiJson(response, operation){
+      const contentType=(response.headers.get('content-type')||'').toLowerCase();
+      const raw=await response.text();
+      let data=null;
+      try{
+        data=raw?JSON.parse(raw):{};
+      }catch(_){
+        const looksLikeHtml=/^\\s*(?:<!doctype\\s+html|<html|<head|<body)/i.test(raw);
+        const status=response.status;
+        const detail=looksLikeHtml
+          ? `The hosting service returned an HTML page instead of JSON for ${operation} (HTTP ${status}). This usually means the Render service is unavailable, restarting, or serving an error page. Check Render → Logs.`
+          : `The server returned an unreadable response for ${operation} (HTTP ${status}, ${contentType||'unknown content type'}).`;
+        throw new Error(detail);
+      }
+      if(!response.ok){
+        const detail=typeof data.detail==='string'?data.detail:
+          (typeof data.message==='string'?data.message:`${operation} failed (HTTP ${response.status}).`);
+        throw new Error(detail);
+      }
+      if(!contentType.includes('application/json') && !contentType.includes('+json')){
+        throw new Error(`The server response for ${operation} was not JSON (HTTP ${response.status}).`);
+      }
+      return data;
+    }
+    async function apiErrorMessage(response, fallback){
+      const contentType=(response.headers.get('content-type')||'').toLowerCase();
+      const raw=await response.text();
+      if(contentType.includes('json')||raw.trim().startsWith('{')){
+        try{
+          const data=JSON.parse(raw);
+          if(typeof data.detail==='string')return data.detail;
+          if(typeof data.message==='string')return data.message;
+        }catch(_){}
+      }
+      if(/^\\s*(?:<!doctype\\s+html|<html|<head|<body)/i.test(raw)){
+        return `The hosting service returned an HTML error page (HTTP ${response.status}) instead of the expected response. Check Render → Logs.`;
+      }
+      return fallback+` (HTTP ${response.status}).`;
+    }
     async function checkStatus(){
-      try{const r=await fetch('/api/status'); const data=await r.json(); aiConfigured=!!data.ai_configured;
+      try{const r=await fetch('/api/status',{cache:'no-store'}); const data=await readApiJson(r,'AI connection check'); aiConfigured=!!data.ai_configured;
         $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
         $('apiStatus').innerHTML=`<span class="status-dot"></span><span>${aiConfigured?`AI connected · ${escapeHtml(data.model)}`:'AI connection needs setup'}</span>`;
         $('apiNotice').classList.toggle('hidden',aiConfigured);
@@ -1021,8 +1060,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       showLoading('Creating your study guide','Uploading and reading your PowerPoint, then generating the study guide. The elapsed timer shows real waiting time, not a fabricated progress percentage.','POWERPOINT + AI GENERATION');
       try{
         const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
-        const data=await response.json();
-        if(!response.ok)throw new Error(data.detail||'The study guide could not be generated.');
+        const data=await readApiJson(response,'Study guide generation');
         currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();
         $('loadingTitle').textContent='Formatting your PDF';
         $('loadingMessage').textContent='The guide has been generated. StudentsGUIDE is preparing the downloadable PDF.';
@@ -1068,7 +1106,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       if(!currentGuide)return;
       try{
         const r=await fetch('/api/study-guide-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guide:currentGuide})});
-        if(!r.ok){const d=await r.json();throw new Error(d.detail||'Could not create the PDF.');}
+        if(!r.ok)throw new Error(await apiErrorMessage(r,'Could not create the PDF'));
         const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='StudentsGUIDE_Study_Guide.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);if(!silent)toast('Your PDF download has started.');return true;
       }catch(e){if(!silent)toast(e.message||'PDF export failed.');else toast(`The guide was generated, but PDF export failed: ${e.message}`,6000);return false;}
     }
@@ -1083,7 +1121,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       showLoading('Building your interactive quiz','Generating questions from your lecture. The elapsed timer shows real waiting time.','QUIZ GENERATION');
       try{
         const r=await fetch('/api/generate-quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_text:currentSourceText,mode,lecture_title:currentGuide.title||'Uploaded lecture'})});
-        const data=await r.json();if(!r.ok)throw new Error(data.detail||'The quiz could not be generated.');
+        const data=await readApiJson(r,'Quiz generation');
         currentQuiz=data;answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();toast(`${data.questions.length} questions generated.`);
       }catch(e){
         toast(e.message||'Quiz generation failed.',5500);
