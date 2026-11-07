@@ -871,7 +871,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 
   <main id="guideView" class="app-shell hidden"><div class="container">
     <div class="app-top"><div><button class="back-link" onclick="goHome()">← Back to home</button><h1 class="app-title">Your study guide</h1><p class="app-sub" id="guideMeta">Generated from your uploaded lecture</p></div><span class="small-pill" id="guideModeBadge">AI-GENERATED GUIDE</span></div>
-    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Choose your next step: download a PDF copy or practise with an interactive quiz.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
+    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Nothing downloads automatically. Choose an action below when you are ready.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
   </div></main>
 
   <main id="modeView" class="app-shell hidden"><div class="container">
@@ -977,7 +977,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         maxUploadMb=Number(data.max_upload_mb)||20;
         const uploadLimitPill=document.querySelector('#dropzone .small-pill');if(uploadLimitPill)uploadLimitPill.textContent='PowerPoint (.PPTX) · Max '+maxUploadMb+' MB';
 
-      }catch(e){$('apiStatus').className='status-line error';$('apiStatus').innerHTML='<span class="status-dot"></span><span>Could not reach the app server</span>';}
+      }catch(e){console.warn('StudentsGUIDE status check failed:',e);}
     }
     function setFile(file){
       if(!file)return;
