@@ -293,7 +293,7 @@ async def ask_ai(
         "generationConfig": {
             "responseMimeType": "application/json",
             # Low thinking reduces latency; maxOutputTokens still includes thinking tokens.
-            "thinkingConfig": {"thinkingLevel": "LOW"},
+            "thinkingConfig": {"thinkingLevel": "low"},
             "maxOutputTokens": output_limit,
         },
     }
