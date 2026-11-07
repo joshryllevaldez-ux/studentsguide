@@ -1,7 +1,7 @@
 # StudentsGUIDE.com — AI Application
 
 **Tagline:** Struggles less, study smart.  
-**Version:** 0.4.0  
+**Version:** 0.4.3  
 **Project:** AIT111 Artificial Intelligence, Fall 2026–2027
 
 StudentsGUIDE is a locally run educational AI application. It takes a student's lecture PowerPoint presentation, extracts the readable slide text, and uses a Generative AI model to create a structured study guide and an interactive quiz. It runs on the student's Windows computer and opens in the default browser at a local address. Public website hosting or a purchased domain is not required for the application demonstration.
@@ -81,6 +81,7 @@ Model capabilities, supported thinking levels and output limits are documented i
 
 - The current PowerPoint processor extracts text from text boxes, grouped shapes, tables, charts and speaker notes. It does not run OCR on text that exists only inside screenshots or images.
 - Charts, diagrams and image-based slides may need to be checked against the original PowerPoint.
+- To avoid silently omitting source material, a deck whose extracted text exceeds the 55,000-character processing limit is rejected with instructions to split the PowerPoint into smaller parts.
 - The AI is instructed to use only the supplied lecture content, but generated material can still contain errors. Review study guides and answer keys against the source slides before using them for assessment preparation.
 - The sample experience is illustrative preview content. It is not an AI-generated output and must not be presented as such in the AIT111 report.
 - The application does not currently include student logins, cloud storage, multiple-user accounts, analytics or public hosting.
