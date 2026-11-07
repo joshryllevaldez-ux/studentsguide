@@ -89,3 +89,10 @@ Do not describe a feature as tested or deployed unless the corresponding test or
 - If the platform cannot afford a request, it should explain that the service is temporarily unavailable or that a fair-use limit was reached; it must not ask the student to pay.
 
 Any future proposal that changes this policy requires the owner's explicit approval before implementation. This policy applies to development and production.
+
+
+## StudentsGUIDE 2.1 upgrade in development
+
+The `studentsguide-2.1-upgrade` branch adds bounded extraction of embedded PowerPoint images and passes those images to the configured vision-capable AI provider alongside slide text. Up to six supported images of at most 700 KB each are included to limit request size. The guide prompt asks the model to interpret readable chart labels, diagrams, and visual relationships, and to disclose unclear visuals rather than guess. The PDF renderer uses dark-blue description panels and a vector lightbulb beside Brain Hack memory cues. The homepage reduces the white glow behind the slogan and adds more gently animated academic accents. The existing homepage has no separate user-supplied photo element and no AIT111 footer text, so neither was present to remove.
+
+Vision output still requires verification with real lecture decks. Image-only slides that are unreadable or unsupported remain disclosed as limitations; no system can guarantee complete interpretation of every diagram.
