@@ -523,12 +523,14 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     styles.add(ParagraphStyle(name="SGGoldBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.5, leading=12.2, textColor=colors.HexColor("#604A12"), spaceAfter=2))
 
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
-        # Strip model-emitted formatting tags before escaping content for ReportLab.
-        raw = str(value or "")
-        raw = re.sub(r"</?(?:b|strong|i|em|u)\s*>", "", raw, flags=re.IGNORECASE)
-        raw = re.sub(r"<br\s*/?>", "\n", raw, flags=re.IGNORECASE)
-        escaped = html.escape(raw).replace("\n", "<br/>")
+        # Treat model output as plain text, never as trusted ReportLab markup.
+        raw = html.unescape(str(value or ""))
+        raw = re.sub(r"<br\\s*/?>", "\\n", raw, flags=re.IGNORECASE)
+        raw = re.sub(r"<[^>]*>", "", raw)
+        raw = html.unescape(raw)
+        escaped = html.escape(raw).replace("\\n", "<br/>")
         return Paragraph(escaped, styles[style])
+
 
     def bullets(items: Any, style: str = "SGSmallNew") -> list[Any]:
         return [P("•  " + str(item), style) for item in (items or [])]
