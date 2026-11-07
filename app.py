@@ -300,23 +300,35 @@ async def ask_ai(
     headers = {"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"}
     started = time.perf_counter()
 
+    async def send_with_bounded_retry(active_client: httpx.AsyncClient) -> httpx.Response:
+        response = None
+        for attempt in range(3):
+            response = await active_client.post(
+                f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
+                headers=headers,
+                json=body,
+            )
+            # Retry only transient upstream server failures. Do not retry quota,
+            # authentication, validation, or client errors.
+            if response.status_code not in {500, 502, 503, 504} or attempt == 2:
+                return response
+            delay = 0.8 * (2 ** attempt)
+            LOGGER.warning(
+                "gemini_transient_status operation=%s status=%s attempt=%s retry_in_seconds=%.1f",
+                operation, response.status_code, attempt + 1, delay,
+            )
+            await asyncio.sleep(delay)
+        return response
+
     try:
         async with _AI_SEMAPHORE:
             client = getattr(app.state, "http_client", None)
             if client is None:
                 # Allows local scripts/tests that invoke the function without ASGI lifespan.
                 async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as fallback:
-                    response = await fallback.post(
-                        f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
-                        headers=headers,
-                        json=body,
-                    )
+                    response = await send_with_bounded_retry(fallback)
             else:
-                response = await client.post(
-                    f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
-                    headers=headers,
-                    json=body,
-                )
+                response = await send_with_bounded_retry(client)
     except httpx.TimeoutException as exc:
         LOGGER.warning("gemini_timeout operation=%s duration_ms=%.1f", operation, (time.perf_counter() - started) * 1000)
         raise HTTPException(status_code=504, detail="Gemini took too long to respond. Try again, or use a smaller quiz mode.") from exc
