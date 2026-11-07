@@ -779,7 +779,6 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
               </div>
             </div>
             <p class="hero-copy">Turn your lecture slides into clear study guides, simplified explanations, real examples, brainhacks, and interactive quizzes, all in one intelligent learning platform.</p>
-            <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()"><span class="cta-upload-icon">↑</span> Create my study guide <span>✦</span></button></div>
             <div class="hero-benefits"><span><b>✦</b> Save time</span><span><b>◎</b> Understand faster</span><span><b>▥</b> Be exam-ready</span></div>
           </div>
           <div class="hero-scene" aria-label="Illustration of study books and a laptop displaying StudentsGUIDE">
@@ -837,8 +836,6 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
             <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
             <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
             <button class="btn btn-primary full" id="generateBtn" disabled>Generate my Study Guide <span>✦</span></button>
-            <div class="status-line" id="apiStatus"><span class="status-dot"></span><span>Checking AI connection…</span></div>
-            <div class="api-notice hidden" id="apiNotice"></div>
             <p class="privacy-note">Your PowerPoint is processed by the application server to create the requested learning materials. Do not upload confidential or restricted lecture content without permission.</p>
           </div>
         </div>
@@ -874,7 +871,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 
   <main id="guideView" class="app-shell hidden"><div class="container">
     <div class="app-top"><div><button class="back-link" onclick="goHome()">← Back to home</button><h1 class="app-title">Your study guide</h1><p class="app-sub" id="guideMeta">Generated from your uploaded lecture</p></div><span class="small-pill" id="guideModeBadge">AI-GENERATED GUIDE</span></div>
-    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Download it as a PDF, then use the same lecture content to generate an interactive quiz.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
+    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Choose your next step: download a PDF copy or practise with an interactive quiz.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
   </div></main>
 
   <main id="modeView" class="app-shell hidden"><div class="container">
@@ -979,12 +976,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       try{const r=await fetch('/api/status'); const data=await r.json(); aiConfigured=!!data.ai_configured;
         maxUploadMb=Number(data.max_upload_mb)||20;
         const uploadLimitPill=document.querySelector('#dropzone .small-pill');if(uploadLimitPill)uploadLimitPill.textContent='PowerPoint (.PPTX) · Max '+maxUploadMb+' MB';
-        $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
-        $('apiStatus').innerHTML=`<span class="status-dot"></span><span>${aiConfigured?`AI connected · ${escapeHtml(data.model)}`:'AI connection needs setup'}</span>`;
-        $('apiNotice').classList.toggle('hidden',aiConfigured);
-        if(!aiConfigured)$('apiNotice').textContent='The website interface is ready, but live AI generation needs an API key configured on the server. A ChatGPT subscription does not automatically connect an API key.';
-        else {$('apiNotice').classList.add('connected');$('apiNotice').textContent='AI generation is connected. Your uploaded lecture will be processed by the server-side model.';}
-        if(aiConfigured){$('apiNotice').classList.remove('hidden');}
+
       }catch(e){$('apiStatus').className='status-line error';$('apiStatus').innerHTML='<span class="status-dot"></span><span>Could not reach the app server</span>';}
     }
     function setFile(file){
@@ -1020,7 +1012,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
         const data=await response.json();
         if(!response.ok)throw new Error(data.detail||'The study guide could not be generated.');
-        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();$('loadingTitle').textContent='Formatting your PDF';$('loadingMessage').textContent='Your guide is ready. StudentsGUIDE is preparing the downloadable PDF.';$('loadingStep').textContent='STEP 3 OF 3 · CREATING PDF';await downloadStudyPdf(true);hideLoading();showGuide();toast('Your study guide and PDF are ready.');
+        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();hideLoading();showGuide();toast('Your study guide is ready. Choose what you want to do next.');
       }catch(error){hideLoading();toast(error.message||'Something went wrong while generating the guide.',5500);}
     }
     function loadSamplePreview(){
