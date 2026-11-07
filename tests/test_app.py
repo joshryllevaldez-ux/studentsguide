@@ -66,3 +66,10 @@ def test_make_pdf_returns_a_pdf_for_topic_content():
 def test_make_pdf_handles_empty_sections():
     pdf = make_pdf({'title': 'Empty lecture', 'sections': []})
     assert pdf.startswith(b'%PDF')
+
+
+def test_extract_pptx_images_returns_empty_for_text_only_slides():
+    from app import extract_pptx_images
+    assert extract_pptx_images(make_pptx(
+        'This slide contains enough readable educational text for a valid presentation.'
+    )) == []
