@@ -683,6 +683,25 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     @media(prefers-reduced-motion:reduce){.sg-study-mascot,.sg-mascot-wave,.sg-mascot-blink,.feature,.feature-icon,.sg-results-celebrate>div:last-child,.sg-results-celebrate:after{animation:none!important;transition:none!important}}
     @media(max-width:620px){.sg-study-mascot{width:76px;height:88px;right:1%;top:3%}}
 
+
+    /* Refined animated learning accents around the main slogan */
+    .hero-slogan-art{position:relative;isolation:isolate}
+    .sg-slogan-orbit-art{position:absolute;inset:0;pointer-events:none;z-index:5}
+    .sg-orbit-icon{position:absolute;display:grid;place-items:center;border:1px solid #ffffffb8;background:linear-gradient(145deg,#ffffffed,#e7f3ffdc);box-shadow:0 12px 28px #123b7430,inset 0 1px 0 #fff;border-radius:18px;color:#1768d5;font-weight:900}
+    .sg-orbit-icon svg{width:100%;height:100%;padding:8px}
+    .sg-orbit-bulb{width:52px;height:52px;left:3%;top:27%;animation:sgOrbitFloat 5.2s ease-in-out infinite}
+    .sg-orbit-book{width:43px;height:43px;right:5%;top:14%;font-size:23px;animation:sgOrbitFloat 6s ease-in-out -1.2s infinite}
+    .sg-orbit-brain{width:39px;height:39px;left:9%;bottom:9%;font-size:27px;color:#9a48d5;animation:sgOrbitFloat 5.6s ease-in-out -2s infinite}
+    .sg-orbit-star{width:29px;height:29px;right:8%;bottom:15%;font-size:20px;color:#e0a000;border-radius:50%;animation:sgOrbitTwinkle 3.4s ease-in-out infinite}
+    @keyframes sgOrbitFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-13px) rotate(6deg)}}
+    @keyframes sgOrbitTwinkle{0%,100%{opacity:.65;transform:scale(.86) rotate(0)}50%{opacity:1;transform:scale(1.12) rotate(18deg)}}
+    .hero-scene .scene-spark,.hero-scene .scene-particle{animation:sgOrbitTwinkle 4s ease-in-out infinite}
+    .hero-scene .scene-cap{animation:sgOrbitFloat 5.5s ease-in-out infinite}
+    .hero-scene .book-stack{animation:sgBookFloat 7s ease-in-out infinite}
+    @keyframes sgBookFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
+    @media(max-width:620px){.sg-orbit-bulb{width:38px;height:38px;left:0;top:29%}.sg-orbit-book{width:33px;height:33px;right:1%;top:10%;font-size:18px}.sg-orbit-brain{width:31px;height:31px;left:4%;bottom:7%;font-size:21px}.sg-orbit-star{width:24px;height:24px;right:4%;bottom:12%;font-size:16px}}
+    @media(prefers-reduced-motion:reduce){.sg-orbit-icon,.hero-scene .scene-spark,.hero-scene .scene-particle,.hero-scene .scene-cap,.hero-scene .book-stack{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -721,7 +740,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
                   <text x="310" y="207" font-size="83" letter-spacing="-3" fill="#06133c" stroke="#06133c" stroke-width="18">Less.</text>
                   <text x="310" y="198" font-size="83" letter-spacing="-3" fill="#fff" stroke="#fff" stroke-width="6">Less.</text>
                   <g fill="url(#sgGoldLine)" stroke="#fff" stroke-width="4">
-                    <path d="M119 169q-22-21-5-32 18 4 25 28l-20 4Z"/><path d="M122 197q-25-5-20-24 19-8 34 15l-14 9Z"/>
+                    
                     <path d="M501 169q22-21 5-32-18 4-25 28l20 4Z"/><path d="M498 197q25-5 20-24-19-8-34 15l14 9Z"/>
                   </g>
                   <text x="310" y="322" font-size="100" letter-spacing="-5" fill="#06133c" stroke="#06133c" stroke-width="22">Study</text>
@@ -732,6 +751,12 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
                 <path d="M104 428Q310 457 516 428" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
                 <path d="M104 424Q310 453 516 424" fill="none" stroke="url(#sgGoldLine)" stroke-width="12" stroke-linecap="round"/>
               </svg>
+              <div class="sg-slogan-orbit-art" aria-hidden="true">
+                <span class="sg-orbit-icon sg-orbit-bulb"><svg viewBox="0 0 48 48"><path d="M24 5a13 13 0 0 0-8 23c2 1.5 3 3.5 3 6h10c0-2.5 1-4.5 3-6A13 13 0 0 0 24 5Z" fill="#fff3b0" stroke="#d99b13" stroke-width="2.5"/><path d="M19 39h10M20 43h8M24 1v-1M5 13l-3-2M43 13l3-2M7 31l-3 2M41 31l3 2" stroke="#e5a916" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+                <span class="sg-orbit-icon sg-orbit-book">▤</span>
+                <span class="sg-orbit-icon sg-orbit-brain">✧</span>
+                <span class="sg-orbit-icon sg-orbit-star">✦</span>
+              </div>
             </div>
             <p class="hero-copy">Turn your lecture slides into clear study guides, simplified explanations, real examples, brainhacks, and interactive quizzes, all in one intelligent learning platform.</p>
             <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()"><span class="cta-upload-icon">↑</span> Create my study guide <span>✦</span></button></div>
@@ -820,7 +845,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     <section class="section" id="how" style="padding-top:0">
       <div class="container">
         <div class="section-head"><div class="section-kicker">Made for student life</div><h2>A campus-inspired learning space</h2><p>A bright, student-friendly interface with an academic look inspired by the university environment.</p></div>
-        <div class="campus-art"><img src="/assets/campus-illustration.svg" alt="Illustration of a modern university campus, palm trees and study books"><div class="campus-caption">Illustrative campus-inspired artwork created for the StudentsGUIDE project. It is not an official Ajman University image.</div></div>
+        
         <div class="section-head" style="margin-top:40px"><div class="section-kicker">A simple workflow</div><h2>Four steps. One focused study session.</h2><p>Move from the original class material to your personal revision and self-check.</p></div>
         <div class="how-grid"><div class="step"><div class="step-number">1</div><h4>Upload your PPTX</h4><p>Choose a PowerPoint lecture from your device.</p></div><div class="step"><div class="step-number">2</div><h4>Generate your guide</h4><p>AI organizes the lecture into a study guide with examples and brain hacks.</p></div><div class="step"><div class="step-number">3</div><h4>Choose a quiz mode</h4><p>Generate MCQs, true/false, scenario or mixed questions.</p></div><div class="step"><div class="step-number">4</div><h4>Review and improve</h4><p>See explanations, mark questions and check your result.</p></div></div>
       </div>
@@ -853,7 +878,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     <section id="resultsContent"></section>
   </div></main>
 
-  <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div><div class="footer-tag">A student-focused AI learning project · AIT111</div></div></footer>
+  <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div></div></footer>
 
   <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite"><div class="loading-card sg-loading-card">
     <div class="sg-loader-art" role="img" aria-label="Animated graduation cap and open book loading indicator">
