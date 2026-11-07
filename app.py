@@ -54,10 +54,10 @@ _AI_DAILY_COUNT = 0
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
     GEMINI_API_KEY = ""
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.3.1"
+APP_VERSION = "0.3.2"
 PROMPT_VERSION = "0.5"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
