@@ -326,6 +326,7 @@ SOURCE FIDELITY AND COVERAGE
 - Preserve the lecturer's terminology, named models, examples, case studies, distinctions, processes, and important qualifications.
 - Work through the slide-organized source from beginning to end. Map every substantive slide/topic to one or more sections. Combine closely related slides when useful, but do not silently omit important content to keep the guide short.
 - Include source slide numbers in slide_refs. If a slide contains only a diagram/image whose contents are not present in the supplied text, do not pretend to understand it; mention this limitation in coverage_note.
+- When slide images are attached, inspect each image for legible diagram labels, chart axes/values, table entries, process arrows, classifications, and visual relationships. Explain only what is actually readable. If an image is too small, ambiguous, or cropped, identify the slide and limitation in coverage_note. Do not infer unseen values or labels.
 - If the source is ambiguous, contradictory, incomplete, or appears to contain a questionable claim, flag it neutrally in coverage_note instead of silently correcting it.
 - Do not claim full coverage unless the content actually supports it.
 
