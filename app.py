@@ -57,11 +57,12 @@ _AI_DAILY_COUNT = 0
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
     GEMINI_API_KEY = ""
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.2"
-PROMPT_VERSION = "0.7"
+APP_VERSION = "0.4.3"
+PROMPT_VERSION = "0.8"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -75,7 +76,7 @@ async def lifespan(application: FastAPI):
         timeout=httpx.Timeout(180.0, connect=20.0),
         limits=httpx.Limits(max_connections=8, max_keepalive_connections=4, keepalive_expiry=30.0),
     )
-    LOGGER.info("service_started model=%s max_upload_mb=%s concurrency=%s", GEMINI_MODEL, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
+    LOGGER.info("service_started study_model=%s quiz_model=%s max_upload_mb=%s concurrency=%s", GEMINI_MODEL, GEMINI_FAST_MODEL, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
     try:
         yield
     finally:
@@ -297,6 +298,7 @@ async def ask_ai(
             detail="Gemini AI is not connected. The administrator must configure GEMINI_API_KEY on the hosting server.",
         )
 
+    model = GEMINI_FAST_MODEL if operation.startswith("quiz_") else GEMINI_MODEL
     output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
         "systemInstruction": {"parts": [{"text": instructions}]},
@@ -323,7 +325,7 @@ async def ask_ai(
         response = None
         for attempt in range(3):
             response = await active_client.post(
-                f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
+                f"{GEMINI_BASE_URL}/models/{model}:generateContent",
                 headers=headers,
                 json=body,
             )
@@ -364,7 +366,7 @@ async def ask_ai(
             detail = "Gemini rejected the request."
         LOGGER.warning(
             "gemini_error operation=%s model=%s status=%s duration_ms=%.1f input_chars=%s detail=%s",
-            operation, GEMINI_MODEL, response.status_code, elapsed_ms, len(user_input), detail[:300],
+            operation, model, response.status_code, elapsed_ms, len(user_input), detail[:300],
         )
         status_code = 429 if response.status_code == 429 else (503 if response.status_code == 503 else 502)
         raise HTTPException(status_code=status_code, detail=f"Gemini service error: {detail}")
@@ -387,7 +389,7 @@ async def ask_ai(
     LOGGER.info(
         "gemini_complete operation=%s model=%s duration_ms=%.1f input_chars=%s output_chars=%s "
         "finish_reason=%s prompt_tokens=%s output_tokens=%s thinking_tokens=%s",
-        operation, GEMINI_MODEL, elapsed_ms, len(user_input), len(output), finish_reason,
+        operation, model, elapsed_ms, len(user_input), len(output), finish_reason,
         usage.get("promptTokenCount"), usage.get("candidatesTokenCount"), usage.get("thoughtsTokenCount"),
     )
 
@@ -524,7 +526,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide_output_budget = min(18000, 9000 + (len(source_text) // 5000) * 700)
+    guide_output_budget = min(10000, 6000 + (len(source_text) // 5000) * 350)
     guide = await ask_ai(
         STUDY_GUIDE_INSTRUCTIONS,
         prompt,
@@ -565,7 +567,19 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
-    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=14000 if count >= 40 else 9000, operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}")
+    quiz_budgets = {
+        "MCQ 20": 7000,
+        "MCQ 10": 4000,
+        "TRUE OR FALSE 10": 3000,
+        "SCENARIO QUESTIONS 15": 6500,
+        "MIXED 40": 11000,
+    }
+    quiz = await ask_ai(
+        QUIZ_INSTRUCTIONS,
+        prompt,
+        max_output_tokens=quiz_budgets[mode],
+        operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}",
+    )
     questions = quiz.get("questions")
     if not isinstance(questions, list) or not questions:
         raise HTTPException(status_code=502, detail="The AI did not return a usable question list. Please generate the quiz again.")
@@ -658,17 +672,16 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     styles.add(ParagraphStyle(name="SGGoldBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.5, leading=12.2, textColor=colors.HexColor("#604A12"), spaceAfter=2))
 
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
-        raw = str(value or "")
-        # Inputs may contain literal HTML formatting tags from AI output or legacy fields.
-        # Preserve deliberate line breaks, but render formatting tags as plain text.
-        raw = re.sub(r"(?i)<br\\s*/?>", "\\n", raw)
+        # Decode escaped markup before stripping it, so legacy &lt;b&gt; tags
+        # are removed too. All remaining text is escaped before ReportLab sees it.
+        raw = html.unescape(str(value or ""))
+        raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
         raw = re.sub(
-            r"(?i)</?(?:b|strong|i|em|u|span|font|p|div|small|sup|sub)(?:\\s+[^>]*)?>",
+            r"(?i)</?(?:b|strong|i|em|u|span|font|p|div|small|sup|sub)(?:\s+[^>]*)?>",
             "",
             raw,
         )
-        raw = html.unescape(raw)
-        escaped = html.escape(raw).replace("\\n", "<br/>")
+        escaped = html.escape(raw).replace("\n", "<br/>")
         return Paragraph(escaped, styles[style])
 
     def bullets(items: Any, style: str = "SGSmallNew") -> list[Any]:
