@@ -1,7 +1,7 @@
 # StudentsGUIDE.com — AI Application
 
 **Tagline:** Struggles less, study smart.  
-**Version:** 0.2.0  
+**Version:** 0.4.0  
 **Project:** AIT111 Artificial Intelligence, Fall 2026–2027
 
 StudentsGUIDE is a locally run educational AI application. It takes a student's lecture PowerPoint presentation, extracts the readable slide text, and uses a Generative AI model to create a structured study guide and an interactive quiz. It runs on the student's Windows computer and opens in the default browser at a local address. Public website hosting or a purchased domain is not required for the application demonstration.
@@ -10,7 +10,7 @@ StudentsGUIDE is a locally run educational AI application. It takes a student's 
 
 ### PowerPoint to study guide
 
-- Drag-and-drop or browse to upload a `.pptx` file (maximum 20 MB).
+- Drag-and-drop or browse to upload a `.pptx` file (maximum 50 MB).
 - Extracts selectable text and table text slide-by-slide.
 - Generates a structured study guide using the lecture content:
   - Overview and learning objectives
@@ -67,16 +67,16 @@ API usage is billed separately from ChatGPT subscription usage. Set API billing 
 - Frontend: HTML, CSS and JavaScript
 - Backend: Python and FastAPI
 - PowerPoint extraction: `python-pptx`
-- Generative AI: OpenAI Responses API
-- Structured JSON output: Responses API JSON mode
+- Generative AI: Google Gemini API (`gemini-3.8-flash`)
+- Structured JSON output: Gemini `responseMimeType: application/json`
 - Study guide PDF: ReportLab
 - Local launcher: Python + Uvicorn + Windows batch launcher
 
-The default API model ID, `gpt-6.1-terra`, is listed in OpenAI's API model documentation. See [OpenAI API models](https://developers.openai.com/api/docs/models) and [Structured Outputs / JSON mode](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses).
+Model capabilities, supported thinking levels and output limits are documented in the [Gemini 3.8 Flash model reference](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash) and [Gemini thinking guide](https://ai.google.dev/gemini-api/docs/thinking).
 
 ## Important limits
 
-- The current PowerPoint processor extracts text and table cells. It does not run OCR on text that exists only inside screenshots or images.
+- The current PowerPoint processor extracts text from text boxes, grouped shapes, tables, charts and speaker notes. It does not run OCR on text that exists only inside screenshots or images.
 - Charts, diagrams and image-based slides may need to be checked against the original PowerPoint.
 - The AI is instructed to use only the supplied lecture content, but generated material can still contain errors. Review study guides and answer keys against the source slides before using them for assessment preparation.
 - The sample experience is illustrative preview content. It is not an AI-generated output and must not be presented as such in the AIT111 report.
