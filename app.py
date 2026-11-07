@@ -525,7 +525,7 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
         # Treat model output as plain text, never as trusted ReportLab markup.
         raw = html.unescape(str(value or ""))
-        raw = re.sub(r"<br\\s*/?>", "\\n", raw, flags=re.IGNORECASE)
+        raw = re.sub(r"<br\s*/?>", "\\n", raw, flags=re.IGNORECASE)
         raw = re.sub(r"<[^>]*>", "", raw)
         raw = html.unescape(raw)
         escaped = html.escape(raw).replace("\\n", "<br/>")
