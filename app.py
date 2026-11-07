@@ -508,7 +508,7 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     styles.add(ParagraphStyle(name="SGGoldBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.5, leading=12.2, textColor=colors.HexColor("#604A12"), spaceAfter=2))
 
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
-        escaped = html.escape(str(value or "")).replace("\n", "<br/>")
+        escaped = html.escape(str(value or "")).replace("&lt;br/&gt;", "<br/>").replace("\n", "<br/>")
         return Paragraph(escaped, styles[style])
 
     def bullets(items: Any, style: str = "SGSmallNew") -> list[Any]:
