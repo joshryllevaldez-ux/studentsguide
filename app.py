@@ -529,6 +529,30 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
     return quiz
 
 
+
+class LightbulbIcon(Flowable):
+    """Small vector lightbulb that renders consistently in standard PDF viewers."""
+    def __init__(self, size: float = 13):
+        super().__init__()
+        self.width = size
+        self.height = size
+        self.size = size
+
+    def draw(self):
+        c = self.canv
+        s = self.size
+        c.saveState()
+        c.setStrokeColor(colors.HexColor("#D99A00"))
+        c.setLineWidth(1.2)
+        c.circle(s * .5, s * .61, s * .27, stroke=1, fill=0)
+        c.line(s * .36, s * .36, s * .64, s * .36)
+        c.line(s * .38, s * .28, s * .62, s * .28)
+        c.line(s * .42, s * .20, s * .58, s * .20)
+        c.line(s * .5, s * .94, s * .5, s)
+        c.line(s * .12, s * .78, s * .04, s * .84)
+        c.line(s * .88, s * .78, s * .96, s * .84)
+        c.restoreState()
+
 def make_pdf(guide: dict[str, Any]) -> bytes:
     """Create a clean, topic-first study guide with a premium navy academic design."""
     buffer = io.BytesIO()
@@ -605,7 +629,7 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
         if section.get("key_points"):
             story.extend([P("KEY IDEAS", "SGSubhead"), *bullets(section.get("key_points"))])
         if section.get("explanation"):
-            story.extend([P("UNDERSTAND THE CONCEPT", "SGSubhead"), P(section["explanation"])])
+            story.extend([P("UNDERSTAND THE CONCEPT", "SGSubhead"), panel("Description", section["explanation"], bg=navy_deep, accent=colors.HexColor("#5CA5FF")), Spacer(1, 5)])
         if section.get("why_it_matters"):
             story.append(panel("Why it matters", section["why_it_matters"], bg=navy_deep, accent=blue))
             story.append(Spacer(1, 5))
@@ -632,8 +656,11 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
         if section.get("common_mistakes"):
             story.extend([P("COMMON MISTAKES TO AVOID", "SGSubhead"), *bullets(section["common_mistakes"])])
         if section.get("brainhack"):
-            # Text-drawn lightbulb marker remains compatible with standard PDF fonts.
-            story.append(panel("LIGHTBULB  |  BRAINHACK · MEMORY CUE", section["brainhack"], bg=gold, label_color="SGGoldBody", body_style="SGGoldBody", accent=colors.HexColor("#E0A800")))
+            bulb_label = Table([[LightbulbIcon(13), P("BRAIN HACK  |  MEMORY CUE", "SGGoldBody")]], colWidths=[19, doc.width-19], hAlign="LEFT")
+            bulb_label.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),gold),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),8),("RIGHTPADDING",(0,0),(-1,-1),8),("TOPPADDING",(0,0),(-1,-1),7),("BOTTOMPADDING",(0,0),(-1,-1),2)]))
+            bulb_body = Table([[P(section["brainhack"], "SGGoldBody")]], colWidths=[doc.width], hAlign="LEFT")
+            bulb_body.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),gold),("BOX",(0,0),(-1,-1),0.55,colors.HexColor("#E0A800")),("LINEBEFORE",(0,0),(0,-1),4,colors.HexColor("#E0A800")),("LEFTPADDING",(0,0),(-1,-1),11),("RIGHTPADDING",(0,0),(-1,-1),11),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),8)]))
+            story.extend([bulb_label, bulb_body, Spacer(1, 5)])
             story.append(Spacer(1, 5))
         terms = section.get("important_terms") or []
         if terms:
