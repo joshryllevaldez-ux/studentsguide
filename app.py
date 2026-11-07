@@ -224,7 +224,7 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
             "systemInstruction": {"parts": [{"text": instructions}]},
             "contents": [{"role": "user", "parts": [{"text": (
                 "Return only one valid JSON object. Do not use Markdown code fences. "
-                "The response must be JSON.\\n\\n" + user_input
+                "The response must be JSON.\n\n" + user_input
             )}]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
@@ -277,7 +277,7 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
         if candidate.get("finishReason") == "MAX_TOKENS":
             raise HTTPException(status_code=502, detail="Gemini reached its response-length limit. Try a smaller lecture or quiz mode.")
         parts = candidate.get("content", {}).get("parts", [])
-        output = "\\n".join(
+        output = "\n".join(
             part.get("text", "")
             for part in parts
             if isinstance(part, dict) and part.get("text")
@@ -525,10 +525,10 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
         # Treat model output as plain text, never as trusted ReportLab markup.
         raw = html.unescape(str(value or ""))
-        raw = re.sub(r"<br\s*/?>", "\\n", raw, flags=re.IGNORECASE)
+        raw = re.sub(r"<br\s*/?>", "\n", raw, flags=re.IGNORECASE)
         raw = re.sub(r"<[^>]*>", "", raw)
         raw = html.unescape(raw)
-        escaped = html.escape(raw).replace("\\n", "<br/>")
+        escaped = html.escape(raw).replace("\n", "<br/>")
         return Paragraph(escaped, styles[style])
 
 
