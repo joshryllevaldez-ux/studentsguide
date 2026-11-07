@@ -57,11 +57,11 @@ _AI_DAILY_COUNT = 0
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
     GEMINI_API_KEY = ""
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.1"
-PROMPT_VERSION = "0.6"
+APP_VERSION = "0.4.2"
+PROMPT_VERSION = "0.7"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -242,7 +242,15 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
     if len(text) < 80:
         raise HTTPException(status_code=422, detail="I could not find enough readable text in this PowerPoint. It may consist mainly of screenshots or image-only slides, which are not interpreted automatically.")
     if len(text) > MAX_SOURCE_CHARS:
-        text = text[:MAX_SOURCE_CHARS] + "\n\n[CONTENT TRUNCATED: the source exceeded the processing limit. Do not claim complete slide coverage.]"
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                f"This PowerPoint contains {len(text):,} characters of extracted lecture text, "
+                f"which exceeds the current safe processing limit of {MAX_SOURCE_CHARS:,}. "
+                "No study guide was generated because doing so would omit lecture content. "
+                "Please split the presentation into smaller parts and upload them separately."
+            ),
+        )
     return text, len(prs.slides)
 
 def extract_output_text(payload: dict[str, Any]) -> str:
@@ -408,17 +416,17 @@ SOURCE FIDELITY AND COVERAGE
 - Do not claim full coverage unless the content actually supports it.
 
 TEACHING STANDARD
-- Organize the guide into the smallest practical number of coherent sections (normally 4-10; use more only when the lecture has genuinely distinct examinable topics). Never merge unrelated topics or omit substantive slide content.
+- Organize the guide in lecture order. Use one section per coherent topic, normally 4-10 sections. Combine only closely related topics; do not omit examinable content.
 - Each section should teach a coherent topic. Use clear headings and preserve the lecture's logical order.
 - Explain concepts in plain, student-friendly language first, then retain the correct technical terminology.
-- For each important concept, explain: what it is, how it works, why it matters, and where/how it is used when the source provides that information.
+- For each important concept, explain what it is and how it works. Include why it matters only when the lecture supports it; do not repeat the same point in multiple fields.
 - Break processes, workflows, formulas, and mechanisms into numbered steps. Explain what happens at each step and why.
 - Explain comparisons explicitly: show what is different, what is similar, and why the distinction matters. Do not invent comparison facts absent from the lecture.
-- Include one useful worked example per section when the source supports one. Add another only when needed to explain a genuinely different formula or concept. Keep the scenario concise and make the steps teach the reasoning.
+- Include one concise worked example when the source supports one. Add an extra example only for a distinct calculation or concept that would otherwise be unclear.
 - For calculations or formulas, preserve exact source notation and values, define variables when provided, show each calculation step, and explain the result. If the source contains no calculation, do not invent one.
 - Include common mistakes or misconceptions only when they can be derived safely from the source; label them as study cautions, not as claims made by the lecturer.
 - Brainhacks must be genuinely useful retrieval cues: mnemonic, keyword association, analogy, sequence cue, or memory formula. Explain what each part of the cue means. Never use a catchy cue that distorts the facts.
-- Add one concise self-check question and answer to each section. Keep optional fields concise: usually 2-4 key points, 1-3 steps, up to 5 important terms, and no more than 3 exam-focus items per section. Do not repeat the same idea across fields.
+- Keep fields compact and non-repetitive: 2-4 key points, 1-3 process steps, up to 4 important terms, and up to 3 exam-focus items per section. Include one self-check question and answer for each section.
 - Highlight exam focus: definitions, distinctions, steps, named models, case-study facts, formulas, and likely application points supported by the lecture.
 - Avoid filler, repetitive introductions, vague praise, and overly compressed bullet lists. Prefer meaningful explanation over artificial brevity.
 
@@ -457,7 +465,7 @@ Return ONLY valid JSON, no Markdown fences, with this shape:
   "exam_tips": ["specific revision advice grounded in the lecture"],
   "coverage_note": "state whether substantive slide topics were covered; identify any missing text, image-only slides, unclear details, or truncation honestly"
 }
-Return a complete but efficient guide. Cover every substantive topic; do not repeat content. Aim for an explanation of approximately 80-130 words per section. Keep why_it_matters to 1-2 sentences, additional_examples to at most one genuinely useful extra example, and lists concise. Prioritize source fidelity and clear teaching over verbosity."""
+Return a complete but efficient guide. Cover every substantive text-based slide exactly once or in a clearly related section. Keep each explanation around 60-100 words, why_it_matters to one sentence, worked examples to 3-5 concise steps, and optional lists short. Use only facts and examples supported by the uploaded lecture. If a diagram or image has no extractable text, disclose that limitation. Never invent missing content."""
 
 
 QUIZ_INSTRUCTIONS = """You are StudentsGUIDE's assessment generator. Generate questions ONLY from the supplied lecture. Do not invent facts or test outside knowledge. Keep exact requested counts and types. Avoid repeated concepts.
@@ -516,7 +524,13 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=65536, operation="study_guide")
+    guide_output_budget = min(18000, 9000 + (len(source_text) // 5000) * 700)
+    guide = await ask_ai(
+        STUDY_GUIDE_INSTRUCTIONS,
+        prompt,
+        max_output_tokens=guide_output_budget,
+        operation="study_guide",
+    )
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
@@ -551,7 +565,7 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
-    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=49152 if count >= 40 else 32768, operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}")
+    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=14000 if count >= 40 else 9000, operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}")
     questions = quiz.get("questions")
     if not isinstance(questions, list) or not questions:
         raise HTTPException(status_code=502, detail="The AI did not return a usable question list. Please generate the quiz again.")
@@ -644,7 +658,17 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
     styles.add(ParagraphStyle(name="SGGoldBody", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.5, leading=12.2, textColor=colors.HexColor("#604A12"), spaceAfter=2))
 
     def P(value: Any, style: str = "SGBodyNew") -> Paragraph:
-        escaped = html.escape(str(value or "")).replace("&lt;br/&gt;", "<br/>").replace("\n", "<br/>")
+        raw = str(value or "")
+        # Inputs may contain literal HTML formatting tags from AI output or legacy fields.
+        # Preserve deliberate line breaks, but render formatting tags as plain text.
+        raw = re.sub(r"(?i)<br\\s*/?>", "\\n", raw)
+        raw = re.sub(
+            r"(?i)</?(?:b|strong|i|em|u|span|font|p|div|small|sup|sub)(?:\\s+[^>]*)?>",
+            "",
+            raw,
+        )
+        raw = html.unescape(raw)
+        escaped = html.escape(raw).replace("\\n", "<br/>")
         return Paragraph(escaped, styles[style])
 
     def bullets(items: Any, style: str = "SGSmallNew") -> list[Any]:
@@ -713,7 +737,7 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
             story.extend([P("COMMON MISTAKES TO AVOID", "SGSubhead"), *bullets(section["common_mistakes"])])
         if section.get("brainhack"):
             # Text-drawn lightbulb marker remains compatible with standard PDF fonts.
-            story.append(panel("LIGHTBULB  |  BRAINHACK · MEMORY CUE", section["brainhack"], bg=gold, label_color="SGGoldBody", body_style="SGGoldBody", accent=colors.HexColor("#E0A800")))
+            story.append(panel("BRAINHACK", section["brainhack"], bg=gold, label_color="SGGoldBody", body_style="SGGoldBody", accent=colors.HexColor("#E0A800")))
             story.append(Spacer(1, 5))
         terms = section.get("important_terms") or []
         if terms:
