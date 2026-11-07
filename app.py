@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import html
 import io
 import json
 import os
 import re
-import secrets
 import threading
 import time
 from collections import defaultdict, deque
@@ -45,7 +43,6 @@ MAX_UPLOAD_MB = max(1, int(os.getenv("MAX_UPLOAD_MB", "50")))
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 MAX_SOURCE_CHARS = 55_000
 MAX_REQUEST_BYTES = (MAX_UPLOAD_MB + 2) * 1024 * 1024
-APP_ACCESS_PASSWORD = os.getenv("APP_ACCESS_PASSWORD", "").strip()
 IP_AI_GENERATION_LIMIT_PER_HOUR = int(os.getenv("IP_AI_GENERATION_LIMIT_PER_HOUR", "25"))
 DAILY_AI_GENERATION_LIMIT = int(os.getenv("DAILY_AI_GENERATION_LIMIT", "100"))
 AI_CONCURRENCY_LIMIT = max(1, int(os.getenv("AI_CONCURRENCY_LIMIT", "3")))
@@ -67,30 +64,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
 
 
-def _basic_auth_is_valid(header: str | None) -> bool:
-    """Validate the optional shared classroom password without storing credentials."""
-    if not APP_ACCESS_PASSWORD:
-        return True
-    if not header or not header.lower().startswith("basic "):
-        return False
-    try:
-        decoded = base64.b64decode(header.split(None, 1)[1], validate=True).decode("utf-8")
-        _username, separator, supplied_password = decoded.partition(":")
-        return bool(separator) and secrets.compare_digest(supplied_password, APP_ACCESS_PASSWORD)
-    except (ValueError, UnicodeDecodeError, IndexError):
-        return False
-
-
 @app.middleware("http")
-async def shared_access_and_security_headers(request: Request, call_next):
-    # Optional shared class password. Configure APP_ACCESS_PASSWORD in the hosting dashboard.
-    if request.url.path != "/api/status" and not _basic_auth_is_valid(request.headers.get("authorization")):
-        return PlainTextResponse(
-            "StudentsGUIDE class access is restricted. Enter the class access password in the browser prompt.",
-            status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="StudentsGUIDE Classroom", charset="UTF-8"'},
-        )
-
+async def security_headers_and_request_limits(request: Request, call_next):
     content_length = request.headers.get("content-length")
     if content_length:
         try:
@@ -381,7 +356,6 @@ async def status() -> dict[str, Any]:
         "model": GEMINI_MODEL if GEMINI_API_KEY else None,
         "max_upload_mb": MAX_UPLOAD_MB,
         "supported_file": ".pptx",
-        "shared_access_enabled": bool(APP_ACCESS_PASSWORD),
         "max_ai_generations_per_day": DAILY_AI_GENERATION_LIMIT,
         "ip_ai_generations_per_hour": IP_AI_GENERATION_LIMIT_PER_HOUR,
     }
