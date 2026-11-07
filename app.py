@@ -417,8 +417,8 @@ MODE_SPECS = {
 
 @app.post("/api/generate-quiz")
 async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any]:
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
+    if not AI_CONFIGURED:
+        raise HTTPException(status_code=503, detail="AI generation is not connected. Configure OPENAI_API_KEY on the hosting server.")
     enforce_ai_generation_quota(request)
     mode = payload.mode.upper().strip()
     if mode not in MODE_SPECS:
