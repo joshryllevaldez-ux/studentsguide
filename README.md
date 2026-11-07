@@ -76,3 +76,16 @@ The tests cover PowerPoint extraction, slide-gap warnings, JSON parsing, and PDF
 The Render service is configured for automatic deployment from commits to `main`. The 2.0 development work is isolated on `studentsguide-2.0-dev` and does not replace the live production branch until it has been reviewed and merged.
 
 Do not describe a feature as tested or deployed unless the corresponding test or deployment has actually been verified.
+
+## Student pricing and payment policy — non-negotiable
+
+**Students must be able to use the core StudentsGUIDE learning workflow at AED 0.** Uploading or dragging and dropping a PowerPoint, generating a study guide or PDF, and using the included practice-quiz features must not trigger a student payment.
+
+- No student subscriptions, paywalls, credit-card collection, per-upload fees, paid credits, or payment prompts for the core learning workflow.
+- Do not add Stripe, PayPal, or another payment processor to the student experience.
+- Do not add hidden charges or route students to a payment page when they upload a file.
+- AI/API, hosting, and storage charges (if any) are operating costs paid by the platform owner. They must never be passed to students through an upload fee or surprise charge.
+- Protect operating costs with reasonable, clearly disclosed fair-use limits, upload-size limits, request throttling, caching, and monitoring. A limit must not become a payment gate.
+- If the platform cannot afford a request, it should explain that the service is temporarily unavailable or that a fair-use limit was reached; it must not ask the student to pay.
+
+Any future proposal that changes this policy requires the owner's explicit approval before implementation. This policy applies to development and production.
