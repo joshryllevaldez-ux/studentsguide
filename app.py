@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import html
 import io
 import json
@@ -33,6 +34,7 @@ from reportlab.platypus import (
     Spacer,
     Table,
     TableStyle,
+    Flowable,
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -157,7 +159,7 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
                         lines.append(row_text)
         slide_header = f"SLIDE {index}"
         if image_count:
-            slide_header += f" [contains {image_count} embedded image(s); image content is not OCR-analyzed]"
+            slide_header += f" [contains {image_count} embedded image(s); image content may be analyzed from attached visual source when readable]"
         if not lines:
             slide_blocks.append(slide_header + "\n[NO SELECTABLE TEXT FOUND: this slide may contain image-only or diagram content. Its visual information has not been interpreted.]")
         else:
@@ -170,6 +172,36 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
         text = text[:MAX_SOURCE_CHARS] + "\n\n[CONTENT TRUNCATED: the source exceeded the processing limit. Do not claim complete slide coverage.]"
     return text, len(prs.slides)
 
+
+
+def extract_pptx_images(data: bytes, max_images: int = 8, max_image_bytes: int = 1_500_000) -> list[dict[str, str]]:
+    """Collect a bounded set of embedded slide images for vision-capable AI analysis."""
+    try:
+        prs = Presentation(io.BytesIO(data))
+    except Exception:
+        return []
+    images: list[dict[str, str]] = []
+    supported = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+    for slide_number, slide in enumerate(prs.slides, start=1):
+        for shape in slide.shapes:
+            if getattr(shape, "shape_type", None) != 13:
+                continue
+            try:
+                image = shape.image
+                mime = image.content_type
+                blob = image.blob
+                if mime not in supported or not blob or len(blob) > max_image_bytes:
+                    continue
+                images.append({
+                    "slide": str(slide_number),
+                    "mime_type": mime,
+                    "data": base64.b64encode(blob).decode("ascii"),
+                })
+                if len(images) >= max_images:
+                    return images
+            except Exception:
+                continue
+    return images
 
 def extract_output_text(payload: dict[str, Any]) -> str:
     direct = payload.get("output_text")
@@ -203,13 +235,13 @@ def parse_json_text(text: str) -> dict[str, Any]:
     return obj
 
 
-async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 6500) -> dict[str, Any]:
+async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 6500, image_data: list[dict[str, str]] | None = None) -> dict[str, Any]:
     """Call the configured model provider and require a structured JSON object."""
     if AI_PROVIDER == "openai":
         body = {
             "model": OPENAI_MODEL,
             "instructions": instructions,
-            "input": user_input,
+            "input": ([{"role": "user", "content": [{"type": "input_text", "text": user_input}] + [{"type": "input_image", "image_url": f"data:{img['mime_type']};base64,{img['data']}"} for img in (image_data or [])]}] if image_data else user_input),
             "max_output_tokens": max_output_tokens,
             "text": {"format": {"type": "json_object"}},
         }
@@ -225,7 +257,7 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
             "contents": [{"role": "user", "parts": [{"text": (
                 "Return only one valid JSON object. Do not use Markdown code fences. "
                 "The response must be JSON.\n\n" + user_input
-            )}]}],
+            )}] + [{"inline_data": {"mime_type": img["mime_type"], "data": img["data"]}} for img in (image_data or [])]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "maxOutputTokens": max_output_tokens,
@@ -395,7 +427,10 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         f"Create a study guide from this lecture PowerPoint. Original file: {filename}. Slides detected: {slide_count}.\n\n"
         "LECTURE CONTENT (organized by slide):\n" + source_text
     )
-    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=12000)
+    slide_images = extract_pptx_images(data)
+    if slide_images:
+        prompt += f"\n\nVISUAL SOURCE: {len(slide_images)} embedded slide image(s) from slides " + ", ".join(sorted({img["slide"] for img in slide_images}, key=int)) + " are attached. Analyze their readable labels, diagrams, charts, tables, and relationships. If an image is unclear, say so; never guess.\n"
+    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=12000, image_data=slide_images)
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
