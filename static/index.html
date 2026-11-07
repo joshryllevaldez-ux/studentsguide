@@ -935,6 +935,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     let activeToast = null;
     let loadingTicker = null;
     let loadingStartedAt = 0;
+    let loadingStepBase = '';
     let generationInProgress = false;
 
     const sampleGuide = {
@@ -986,13 +987,19 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       $('loadingMessage').textContent=message;
       $('loadingOverlay').classList.remove('hidden');
       loadingStartedAt=Date.now();
+      loadingStepBase=step;
       if(loadingTicker)clearInterval(loadingTicker);
       const updateElapsed=()=>{
         const elapsed=Math.floor((Date.now()-loadingStartedAt)/1000);
-        $('loadingStep').textContent=step+' · '+elapsed+'s elapsed';
+        $('loadingStep').textContent=loadingStepBase+' · '+elapsed+'s elapsed';
       };
       updateElapsed();
       loadingTicker=setInterval(updateElapsed,1000);
+    }
+    function setLoadingStep(step){
+      loadingStepBase=step;
+      const elapsed=Math.floor((Date.now()-loadingStartedAt)/1000);
+      $('loadingStep').textContent=loadingStepBase+' · '+elapsed+'s elapsed';
     }
     function hideLoading(){
       if(loadingTicker){clearInterval(loadingTicker);loadingTicker=null;}
@@ -1019,7 +1026,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();
         $('loadingTitle').textContent='Formatting your PDF';
         $('loadingMessage').textContent='The guide has been generated. StudentsGUIDE is preparing the downloadable PDF.';
-        $('loadingStep').textContent='PDF CREATION';
+        setLoadingStep('PDF CREATION');
         const pdfReady=await downloadStudyPdf(true);
         showGuide();
         toast(pdfReady?'Your study guide and PDF are ready.':'Your study guide is ready, but the PDF could not be created.');
