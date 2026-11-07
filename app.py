@@ -17,7 +17,7 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pptx import Presentation
@@ -60,7 +60,7 @@ if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.0"
+APP_VERSION = "0.4.1"
 PROMPT_VERSION = "0.6"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -83,6 +83,17 @@ async def lifespan(application: FastAPI):
 
 
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION, lifespan=lifespan)
+
+
+@app.exception_handler(Exception)
+async def unexpected_error_handler(request: Request, exc: Exception):
+    LOGGER.exception("unhandled_api_error method=%s path=%s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "StudentsGUIDE encountered an unexpected server error. Check the Render service logs for details, then try again."},
+    )
+
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
 
