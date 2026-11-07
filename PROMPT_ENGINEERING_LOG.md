@@ -52,3 +52,34 @@ After an API key is configured and the first real lecture is processed, save:
 6. A before/after example showing the observed improvement.
 
 Do not invent test results or describe the sample preview as AI output. The prompt iteration record above documents engineering choices; model-output improvement must be evaluated with actual tests.
+
+
+## StudentsGUIDE 2.0 development notes
+
+### Prompt version 0.6 and source coverage safeguards
+
+- The study-guide prompt preserves the lecture's topic structure and asks the model to disclose incomplete or image-only source material.
+- The PowerPoint extractor now emits a placeholder for every slide, including slides with no selectable text, and labels embedded images as not OCR-analyzed.
+- Text truncation is explicitly marked in the source sent to the model so a guide cannot honestly claim complete coverage when the source exceeds the processing limit.
+- The PDF begins with the first generated lecture topic rather than a promotional cover card.
+
+### AI provider alignment
+
+- The deployed Render configuration declares OpenAI environment variables, so the backend now selects OpenAI when `OPENAI_API_KEY` is configured.
+- Gemini remains as a backwards-compatible fallback for local environments that still configure `GEMINI_API_KEY`.
+- The status endpoint reports provider and model without exposing secrets.
+
+### Learning progress
+
+- Non-sample quiz attempts are saved locally in the current browser, with recent scores and topic-level accuracy from the latest attempt.
+- This is not a cloud account or cross-device synchronization feature.
+- Sample preview attempts are excluded so illustrative content cannot contaminate real progress records.
+
+### Verification still required
+
+- Run the automated test suite in a clean Python environment.
+- Test a real PPTX containing text, tables, embedded images, and image-only slides.
+- Generate a live AI study guide and quiz using the configured production API key.
+- Inspect PDF pagination and text extraction on desktop and mobile PDF viewers.
+- Test local progress persistence and sample-preview exclusion in a real browser.
+- Verify Render deployment and live service health before merging to production.
