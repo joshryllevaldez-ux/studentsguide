@@ -68,7 +68,7 @@ AI_MODEL = OPENAI_MODEL if AI_PROVIDER == "openai" else (GEMINI_MODEL if AI_PROV
 AI_CONFIGURED = bool(AI_PROVIDER)
 
 APP_VERSION = "0.4.0"
-PROMPT_VERSION = "0.5"
+PROMPT_VERSION = "0.6"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
@@ -142,7 +142,10 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
     slide_blocks: list[str] = []
     for index, slide in enumerate(prs.slides, start=1):
         lines: list[str] = []
+        image_count = 0
         for shape in slide.shapes:
+            if getattr(shape, "shape_type", None) == 13:  # MSO_SHAPE_TYPE.PICTURE
+                image_count += 1
             if getattr(shape, "has_text_frame", False):
                 text = "\n".join(p.text for p in shape.text_frame.paragraphs).strip()
                 if text:
@@ -152,14 +155,19 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
                     row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
                     if row_text:
                         lines.append(row_text)
-        if lines:
-            slide_blocks.append(f"SLIDE {index}\n" + "\n".join(lines))
+        slide_header = f"SLIDE {index}"
+        if image_count:
+            slide_header += f" [contains {image_count} embedded image(s); image content is not OCR-analyzed]"
+        if not lines:
+            slide_blocks.append(slide_header + "\n[NO SELECTABLE TEXT FOUND: this slide may contain image-only or diagram content. Its visual information has not been interpreted.]")
+        else:
+            slide_blocks.append(slide_header + "\n" + "\n".join(lines))
 
     text = "\n\n".join(slide_blocks).strip()
     if len(text) < 80:
-        raise HTTPException(status_code=422, detail="I could not find enough readable text in this PowerPoint. Check that the slides contain selectable text rather than only screenshots.")
+        raise HTTPException(status_code=422, detail="I could not find enough readable text in this PowerPoint. This upload may consist mainly of images or screenshots, which are not yet interpreted.")
     if len(text) > MAX_SOURCE_CHARS:
-        text = text[:MAX_SOURCE_CHARS] + "\n\n[Content shortened to fit the processing limit.]"
+        text = text[:MAX_SOURCE_CHARS] + "\n\n[CONTENT TRUNCATED: the source exceeded the processing limit. Do not claim complete slide coverage.]"
     return text, len(prs.slides)
 
 
