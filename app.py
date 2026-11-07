@@ -51,13 +51,23 @@ _AI_LIMIT_LOCK = threading.Lock()
 _AI_REQUESTS_BY_IP: dict[str, deque[float]] = defaultdict(deque)
 _AI_DAILY_DATE = datetime.now(timezone.utc).date()
 _AI_DAILY_COUNT = 0
+# OpenAI is the configured production provider in render.yaml and README.
+# Gemini remains available as a backwards-compatible fallback for local deployments.
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-6.1-terra").strip()
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
-    GEMINI_API_KEY = ""
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+for _key_name in ("OPENAI_API_KEY", "GEMINI_API_KEY"):
+    if globals()[_key_name].lower() in {"your_api_key_here", "replace_me", "changeme"}:
+        globals()[_key_name] = ""
 
-APP_VERSION = "0.3.1"
+AI_PROVIDER = "openai" if OPENAI_API_KEY else ("gemini" if GEMINI_API_KEY else "")
+AI_MODEL = OPENAI_MODEL if AI_PROVIDER == "openai" else (GEMINI_MODEL if AI_PROVIDER == "gemini" else "")
+AI_CONFIGURED = bool(AI_PROVIDER)
+
+APP_VERSION = "0.4.0"
 PROMPT_VERSION = "0.5"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -186,91 +196,86 @@ def parse_json_text(text: str) -> dict[str, Any]:
 
 
 async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 6500) -> dict[str, Any]:
-    if not GEMINI_API_KEY:
+    """Call the configured model provider and require a structured JSON object."""
+    if AI_PROVIDER == "openai":
+        body = {
+            "model": OPENAI_MODEL,
+            "instructions": instructions,
+            "input": user_input,
+            "max_output_tokens": max_output_tokens,
+            "text": {"format": {"type": "json_object"}},
+        }
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        endpoint = f"{OPENAI_BASE_URL}/responses"
+        provider_name = "OpenAI"
+    elif AI_PROVIDER == "gemini":
+        body = {
+            "systemInstruction": {"parts": [{"text": instructions}]},
+            "contents": [{"role": "user", "parts": [{"text": (
+                "Return only one valid JSON object. Do not use Markdown code fences. "
+                "The response must be JSON.\\n\\n" + user_input
+            )}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "maxOutputTokens": max_output_tokens,
+            },
+        }
+        headers = {"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"}
+        endpoint = f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent"
+        provider_name = "Gemini"
+    else:
         raise HTTPException(
             status_code=503,
-            detail="Gemini AI is not connected. The administrator must configure GEMINI_API_KEY on the hosting server.",
+            detail="AI generation is not connected. Configure OPENAI_API_KEY on the hosting server.",
         )
-
-    body = {
-        "systemInstruction": {"parts": [{"text": instructions}]},
-        "contents": [{
-            "role": "user",
-            "parts": [{
-                "text": (
-                    "Return only one valid JSON object. Do not use Markdown code fences. "
-                    "The response must be JSON.\n\n" + user_input
-                )
-            }]
-        }],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "maxOutputTokens": max_output_tokens,
-        },
-    }
-    headers = {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-    }
 
     try:
         async with _AI_SEMAPHORE:
-            async with httpx.AsyncClient(
-                timeout=httpx.Timeout(180.0, connect=20.0)
-            ) as client:
-                response = await client.post(
-                    f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
-                    headers=headers,
-                    json=body,
-                )
+            async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as client:
+                response = await client.post(endpoint, headers=headers, json=body)
     except httpx.TimeoutException as exc:
-        raise HTTPException(
-            status_code=504,
-            detail="Gemini took too long to respond. Try a smaller PowerPoint or quiz.",
-        ) from exc
+        raise HTTPException(status_code=504, detail=f"{provider_name} took too long to respond. Try a smaller PowerPoint or quiz.") from exc
     except httpx.HTTPError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="StudentsGUIDE could not reach Gemini. Check the server connection.",
-        ) from exc
+        raise HTTPException(status_code=502, detail=f"StudentsGUIDE could not reach {provider_name}. Check the server connection.") from exc
 
     if response.status_code >= 400:
         try:
             error = response.json().get("error", {})
-            detail = error.get("message", "Gemini rejected the request.")
+            detail = error.get("message", f"{provider_name} rejected the request.")
         except Exception:
-            detail = "Gemini rejected the request."
+            detail = f"{provider_name} rejected the request."
         raise HTTPException(
             status_code=429 if response.status_code == 429 else 502,
-            detail=f"Gemini service error: {detail}",
+            detail=f"{provider_name} service error: {detail}",
         )
 
     payload = response.json()
-    candidates = payload.get("candidates", [])
-    if not candidates:
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini returned no response. Try a smaller lecture or quiz.",
-        )
-
-    candidate = candidates[0]
-    if candidate.get("finishReason") == "MAX_TOKENS":
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini reached its response-length limit. Try a smaller lecture or quiz mode.",
-        )
-
-    parts = candidate.get("content", {}).get("parts", [])
-    output = "\n".join(
-        part.get("text", "")
-        for part in parts
-        if isinstance(part, dict) and part.get("text")
-    ).strip()
-    if not output:
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini returned an empty response. Please try again.",
-        )
+    if AI_PROVIDER == "openai":
+        output = extract_output_text(payload)
+        if not output:
+            status = payload.get("status")
+            reason = payload.get("incomplete_details", {}).get("reason")
+            if reason == "max_output_tokens":
+                raise HTTPException(status_code=502, detail="The AI reached its response-length limit. Try a smaller lecture or quiz mode.")
+            raise HTTPException(status_code=502, detail=f"OpenAI returned no usable text (status: {status or 'unknown'}). Please try again.")
+    else:
+        candidates = payload.get("candidates", [])
+        if not candidates:
+            raise HTTPException(status_code=502, detail="Gemini returned no response. Try a smaller lecture or quiz.")
+        candidate = candidates[0]
+        if candidate.get("finishReason") == "MAX_TOKENS":
+            raise HTTPException(status_code=502, detail="Gemini reached its response-length limit. Try a smaller lecture or quiz mode.")
+        parts = candidate.get("content", {}).get("parts", [])
+        output = "\\n".join(
+            part.get("text", "")
+            for part in parts
+            if isinstance(part, dict) and part.get("text")
+        ).strip()
+        if not output:
+            raise HTTPException(status_code=502, detail="Gemini returned an empty response. Please try again.")
     return parse_json_text(output)
 
 STUDY_GUIDE_INSTRUCTIONS = """You are StudentsGUIDE, an expert university-level tutor and meticulous lecture-to-learning designer. Your job is to transform the supplied PowerPoint text into a genuinely useful, comprehensive study guide that helps a student understand, remember, and apply the lecture—not merely summarize it.
@@ -352,8 +357,9 @@ async def status() -> dict[str, Any]:
     return {
         "ok": True,
         "app_version": APP_VERSION,
-        "ai_configured": bool(GEMINI_API_KEY),
-        "model": GEMINI_MODEL if GEMINI_API_KEY else None,
+        "ai_configured": AI_CONFIGURED,
+        "provider": AI_PROVIDER or None,
+        "model": AI_MODEL or None,
         "max_upload_mb": MAX_UPLOAD_MB,
         "supported_file": ".pptx",
         "max_ai_generations_per_day": DAILY_AI_GENERATION_LIMIT,
@@ -363,8 +369,8 @@ async def status() -> dict[str, Any]:
 
 @app.post("/api/generate-study-guide")
 async def generate_study_guide(request: Request, file: UploadFile = File(...)) -> dict[str, Any]:
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
+    if not AI_CONFIGURED:
+        raise HTTPException(status_code=503, detail="AI generation is not connected yet. Configure OPENAI_API_KEY on the hosting server.")
     enforce_ai_generation_quota(request)
     filename = file.filename or "lecture.pptx"
     if not filename.lower().endswith(".pptx"):
