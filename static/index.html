@@ -832,7 +832,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
               <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
               <strong>Drag & drop your lecture slides here</strong>
               <p>or <span class="browse" id="browseLink">browse files</span></p>
-              <span class="small-pill">PowerPoint (.PPTX) · Max 50 MB</span>
+              <span class="small-pill">PowerPoint (.PPTX) · Checking limit…</span>
             </div>
             <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
             <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
@@ -944,6 +944,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
   <script>
     const $ = (id) => document.getElementById(id);
     let selectedFile = null;
+    let maxUploadMb = 20;
     let aiConfigured = false;
     let currentGuide = null;
     let currentQuiz = null;
@@ -976,6 +977,8 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     function formatSize(bytes){return bytes<1024*1024?`${(bytes/1024).toFixed(0)} KB`:`${(bytes/1024/1024).toFixed(2)} MB`;}
     async function checkStatus(){
       try{const r=await fetch('/api/status'); const data=await r.json(); aiConfigured=!!data.ai_configured;
+        maxUploadMb=Number(data.max_upload_mb)||20;
+        const uploadLimitPill=document.querySelector('#dropzone .small-pill');if(uploadLimitPill)uploadLimitPill.textContent='PowerPoint (.PPTX) · Max '+maxUploadMb+' MB';
         $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
         $('apiStatus').innerHTML=`<span class="status-dot"></span><span>${aiConfigured?`AI connected · ${escapeHtml(data.model)}`:'AI connection needs setup'}</span>`;
         $('apiNotice').classList.toggle('hidden',aiConfigured);
@@ -987,7 +990,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     function setFile(file){
       if(!file)return;
       if(!file.name.toLowerCase().endsWith('.pptx')){toast('Please choose a PowerPoint .pptx file.');return;}
-      if(file.size>50*1024*1024){toast('This file is larger than 50 MB. Choose a smaller PowerPoint.');return;}
+      if(file.size>maxUploadMb*1024*1024){toast('This file is larger than '+maxUploadMb+' MB. Choose a smaller PowerPoint.');return;}
       selectedFile=file;$('fileName').textContent=file.name;$('fileSize').textContent=formatSize(file.size);$('fileLine').classList.remove('hidden');$('generateBtn').disabled=false;
     }
     $('pptInput').addEventListener('change',e=>setFile(e.target.files[0]));
