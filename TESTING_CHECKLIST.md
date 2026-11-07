@@ -1,20 +1,12 @@
 # StudentsGUIDE AI Application — Testing Checklist
 
-## Automated tests completed in the build environment
+## Automated test status
 
-`python -m pytest -q` — **11 passed**.
+No automated test suite is currently present in the restored `main` branch, and no passing CI checks are attached to the recent optimization commits. Do not report automated tests as passed until tests are added, executed and their results recorded.
 
-Coverage includes:
+The previous checklist referred to mocked OpenAI tests. Those checks do not validate the current Gemini-only request path and must not be treated as evidence that the current implementation passes.
 
-- Application status endpoint.
-- PowerPoint slide text extraction.
-- Study-guide generation route with a mocked model response.
-- PDF generation route and PDF signature validation.
-- All five quiz-generation modes with mocked model responses.
-- Rejection of an incorrect Mixed 40 question distribution.
-- OpenAI Responses API request construction, including JSON mode and server-side authorization header.
-
-These are application/backend tests using deterministic mock responses. They do not prove the semantic accuracy of live AI-generated study materials.
+The latest backend changes add structured timing logs for HTTP requests, PPTX extraction, Gemini generation and PDF creation. These provide a basis for a real before/after performance comparison after deployment.
 
 ## Manual testing required with a real lecture
 
@@ -23,7 +15,7 @@ These are application/backend tests using deterministic mock responses. They do 
 | Launch on Windows | Launcher installs dependencies and opens local application | Pending on user's Windows laptop |
 | Upload a valid `.pptx` | File name appears and Generate button enables | Pending with user's lecture |
 | Upload a non-PPTX file | Clear format warning | Frontend validation present; manual browser check pending |
-| Upload a PPTX over 20 MB | Clear size warning | Frontend/backend validation present; manual browser check pending |
+| Upload a PPTX over 50 MB | Clear size warning | Frontend/backend validation present; manual browser check pending |
 | Process a lecture with selectable text | Slide text is extracted and sent to the model | Extraction unit test passed; live AI pending |
 | Process a mostly image-based deck | App explains that image-only text is not extracted | Backend behaviour present; manual check pending |
 | Generate study guide with live AI | Overview, objectives, explanations, worked examples, brain hacks and recap appear | Requires API key and real lecture |
