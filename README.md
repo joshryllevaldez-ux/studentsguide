@@ -49,19 +49,22 @@ The launcher chooses an available local port, starting at 8000. It does not publ
 
 ## Connect live AI generation
 
-The user must configure an OpenAI API key on the local server before using live AI generation. A ChatGPT subscription does not automatically supply API credits.
+StudentsGUIDE uses the Google Gemini Developer API. Create an API key in [Google AI Studio](https://aistudio.google.com/apikey).
 
-1. Start StudentsGUIDE once so it creates `.env` from `.env.example`.
-2. Close StudentsGUIDE.
-3. Open `.env` in Notepad.
-4. Replace `your_api_key_here` after `OPENAI_API_KEY=` with the API key from the OpenAI developer platform.
-5. Leave `OPENAI_MODEL=gpt-6.1-terra` unless you intentionally want to use another model available to your API account.
-6. Save `.env` and run `start_studentsguide.bat` again.
+### Render deployment
+1. Open the StudentsGUIDE service in Render.
+2. Open **Environment**.
+3. Add `GEMINI_API_KEY` as a secret environment variable and paste the key.
+4. Set `GEMINI_MODEL` to `gemini-3.8-flash` if it is not already set.
+5. Save changes and wait until the deployment is Live.
 
-The API key is read only by the Python server. It is not included in the browser interface or returned by the status endpoint. Keep `.env private and do not share the application folder with a configured key inside it.
+### Local Windows run
+1. Copy `.env.example` to `.env` if the launcher has not already done so.
+2. Open `.env` in Notepad and set `GEMINI_API_KEY=your_key_here`.
+3. Keep `GEMINI_MODEL=gemini-3.8-flash`.
+4. Save the file and run `start_studentsguide.bat` again.
 
-API usage is billed separately from ChatGPT subscription usage. Set API billing limits before testing.
-
+The API key is read only by the Python server. Never place it in frontend JavaScript or commit a populated `.env` file to GitHub. Gemini API free-tier use has quotas and rate limits; check Google's current [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). A free tier is not an unlimited service.
 ## Technology
 
 - Frontend: HTML, CSS and JavaScript
@@ -85,12 +88,9 @@ Model capabilities, supported thinking levels and output limits are documented i
 
 ## Testing and development evidence
 
-- Automated tests are in `tests/test_app.py`.
-- Run the tests with `python -m pip install -r requirements-dev.txt` followed by `python -m pytest -q`.
-- Prompt versions and planned evidence are recorded in `PROMPT_ENGINEERING_LOG.md`.
-- Real API calls and end-to-end testing with an actual course lecture must be completed after the API key is configured.
-- Do not report pending tests as passed. Record the actual course file, model, prompt version and date for each real AI test.
+The restored `main` branch currently does not contain an automated test suite. Do not report tests as passed unless a test suite is added and run against this version.
 
+Real API calls and end-to-end testing with an actual course lecture must be completed after the Gemini key is configured. Use `TESTING_CHECKLIST.md` to record real test dates, the uploaded course file, model ID, prompt version, generation time and any content issues. Backend timing logs are available in the Render service logs for HTTP requests, PPTX extraction, Gemini generation and PDF creation.
 ## Project files
 
 - `app.py` — FastAPI backend, PowerPoint extraction, model requests and PDF creation
@@ -99,6 +99,5 @@ Model capabilities, supported thinking levels and output limits are documented i
 - `run.py` — local app launcher
 - `start_studentsguide.bat` — Windows one-click launcher
 - `.env.example` — API configuration template
-- `tests/` — automated backend tests
 - `PROMPT_ENGINEERING_LOG.md` — prompt development record
 - `TESTING_CHECKLIST.md` — evaluation checklist
