@@ -933,6 +933,9 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     let revealed = new Set();
     let isSamplePreview = false;
     let activeToast = null;
+    let loadingTicker = null;
+    let loadingStartedAt = 0;
+    let generationInProgress = false;
 
     const sampleGuide = {
       title:'Introduction to Artificial Intelligence', course:'Artificial Intelligence', overview:'This illustrative preview demonstrates how StudentsGUIDE can organize an introductory lecture into key concepts, explanations, examples and memory cues. It is sample content and was not generated from an uploaded lecture.', slide_count:6, source_filename:'Sample preview (not uploaded)', generation_type:'Illustrative sample preview',
@@ -978,8 +981,23 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     ['dragleave','drop'].forEach(type=>$('dropzone').addEventListener(type,e=>{e.preventDefault();$('dropzone').classList.remove('dragover');}));
     $('dropzone').addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
 
-    function showLoading(title,message,step){$('loadingTitle').textContent=title;$('loadingMessage').textContent=message;$('loadingStep').textContent=step;$('loadingOverlay').classList.remove('hidden');}
-    function hideLoading(){$('loadingOverlay').classList.add('hidden');}
+    function showLoading(title,message,step){
+      $('loadingTitle').textContent=title;
+      $('loadingMessage').textContent=message;
+      $('loadingOverlay').classList.remove('hidden');
+      loadingStartedAt=Date.now();
+      if(loadingTicker)clearInterval(loadingTicker);
+      const updateElapsed=()=>{
+        const elapsed=Math.floor((Date.now()-loadingStartedAt)/1000);
+        $('loadingStep').textContent=step+' · '+elapsed+'s elapsed';
+      };
+      updateElapsed();
+      loadingTicker=setInterval(updateElapsed,1000);
+    }
+    function hideLoading(){
+      if(loadingTicker){clearInterval(loadingTicker);loadingTicker=null;}
+      $('loadingOverlay').classList.add('hidden');
+    }
     function hideViews(){['homeView','guideView','modeView','quizView','resultsView'].forEach(id=>$(id).classList.add('hidden'));}
     function goHome(){hideViews();$('homeView').classList.remove('hidden');$('siteFooter').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
     function showGuide(){hideViews();$('guideView').classList.remove('hidden');$('siteFooter').classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});}
@@ -988,16 +1006,30 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 
     $('generateBtn').addEventListener('click',generateGuide);
     async function generateGuide(){
-      if(!selectedFile)return;
+      if(!selectedFile||generationInProgress)return;
       if(!aiConfigured){toast('AI is not connected yet. Add the server-side API key first. You can still explore the sample preview.');return;}
+      generationInProgress=true;
+      $('generateBtn').disabled=true;
       const form=new FormData();form.append('file',selectedFile);
-      showLoading('Creating your study guide','Extracting your PowerPoint slides and preparing the AI study guide.','STEP 1 OF 3 · READING LECTURE');
+      showLoading('Creating your study guide','Uploading and reading your PowerPoint, then generating the study guide. The elapsed timer shows real waiting time, not a fabricated progress percentage.','POWERPOINT + AI GENERATION');
       try{
         const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
         const data=await response.json();
         if(!response.ok)throw new Error(data.detail||'The study guide could not be generated.');
-        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();$('loadingTitle').textContent='Formatting your PDF';$('loadingMessage').textContent='Your guide is ready. StudentsGUIDE is preparing the downloadable PDF.';$('loadingStep').textContent='STEP 3 OF 3 · CREATING PDF';await downloadStudyPdf(true);hideLoading();showGuide();toast('Your study guide and PDF are ready.');
-      }catch(error){hideLoading();toast(error.message||'Something went wrong while generating the guide.',5500);}
+        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();
+        $('loadingTitle').textContent='Formatting your PDF';
+        $('loadingMessage').textContent='The guide has been generated. StudentsGUIDE is preparing the downloadable PDF.';
+        $('loadingStep').textContent='PDF CREATION';
+        const pdfReady=await downloadStudyPdf(true);
+        showGuide();
+        toast(pdfReady?'Your study guide and PDF are ready.':'Your study guide is ready, but the PDF could not be created.');
+      }catch(error){
+        toast(error.message||'Something went wrong while generating the guide.',5500);
+      }finally{
+        hideLoading();
+        generationInProgress=false;
+        $('generateBtn').disabled=!selectedFile;
+      }
     }
     function loadSamplePreview(){
       currentGuide=JSON.parse(JSON.stringify(sampleGuide));currentSourceText='SAMPLE PREVIEW ONLY: Introduction to Artificial Intelligence. This illustrative content is not from an uploaded lecture.';isSamplePreview=true;renderGuide();showGuide();toast('Sample preview loaded. This is illustrative content, not a live AI output.');
@@ -1033,22 +1065,25 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='StudentsGUIDE_Study_Guide.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);if(!silent)toast('Your PDF download has started.');return true;
       }catch(e){if(!silent)toast(e.message||'PDF export failed.');else toast(`The guide was generated, but PDF export failed: ${e.message}`,6000);return false;}
     }
-    $('goQuiz').addEventListener('click',async()=>{
-      showLoading('Preparing your interactive quiz','Your study materials are ready. StudentsGUIDE is opening the quiz selection.','STEP 1 OF 2 · PREPARING QUIZ');
-      await new Promise(resolve=>setTimeout(resolve,1100));
-      hideLoading();
+    $('goQuiz').addEventListener('click',()=>{
       showModes();
     });
 
     async function startQuiz(mode){
-      if(!currentGuide)return;
+      if(!currentGuide||generationInProgress)return;
       if(isSamplePreview){currentQuiz=JSON.parse(JSON.stringify(sampleQuiz));currentQuiz.mode=mode;currentQuiz.quiz_title=`${mode} · Sample Preview`;currentQuiz.questions=fitSampleQuestions(mode);answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();toast('Sample quiz preview. Questions are illustrative, not generated from your lecture.');return;}
-      showLoading('Building your interactive quiz','Generating questions from the lecture and preparing complete explanations.','STEP 2 OF 3 · GENERATING QUESTIONS');
+      generationInProgress=true;
+      showLoading('Building your interactive quiz','Generating questions from your lecture. The elapsed timer shows real waiting time.','QUIZ GENERATION');
       try{
         const r=await fetch('/api/generate-quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_text:currentSourceText,mode,lecture_title:currentGuide.title||'Uploaded lecture'})});
         const data=await r.json();if(!r.ok)throw new Error(data.detail||'The quiz could not be generated.');
-        currentQuiz=data;answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();hideLoading();showQuiz();toast(`${data.questions.length} questions generated.`);
-      }catch(e){hideLoading();toast(e.message||'Quiz generation failed.',5500);}
+        currentQuiz=data;answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();toast(`${data.questions.length} questions generated.`);
+      }catch(e){
+        toast(e.message||'Quiz generation failed.',5500);
+      }finally{
+        hideLoading();
+        generationInProgress=false;
+      }
     }
     function fitSampleQuestions(mode){
       const q=JSON.parse(JSON.stringify(sampleQuiz.questions));let count=mode==='MCQ 20'?20:mode==='MCQ 10'||mode==='TRUE OR FALSE 10'?10:mode==='SCENARIO QUESTIONS 15'?15:40;
