@@ -676,11 +676,8 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
         # are removed too. All remaining text is escaped before ReportLab sees it.
         raw = html.unescape(str(value or ""))
         raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
-        raw = re.sub(
-            r"(?i)</?(?:b|strong|i|em|u|span|font|p|div|small|sup|sub)(?:\s+[^>]*)?>",
-            "",
-            raw,
-        )
+        # Remove any remaining HTML/XML-style tags, not just bold tags.
+        raw = re.sub(r"</?[A-Za-z][^>]*>", "", raw)
         escaped = html.escape(raw).replace("\n", "<br/>")
         return Paragraph(escaped, styles[style])
 
