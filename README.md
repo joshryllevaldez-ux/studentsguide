@@ -70,7 +70,7 @@ The API key is read only by the Python server. Never place it in frontend JavaSc
 - Frontend: HTML, CSS and JavaScript
 - Backend: Python and FastAPI
 - PowerPoint extraction: `python-pptx`
-- Generative AI: Gemini 3.8 Flash for study guides and Gemini 3.5 Flash-Lite for quizzes
+- Generative AI: Gemini 3.8 Flash for study guides, scenario quizzes and Mixed 40; Gemini 3.5 Flash-Lite for MCQ and True/False quizzes
 - Structured JSON output: Gemini `responseMimeType: application/json`
 - Study guide PDF: ReportLab
 - Local launcher: Python + Uvicorn + Windows batch launcher
