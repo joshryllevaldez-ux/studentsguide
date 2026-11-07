@@ -379,7 +379,6 @@ async def status() -> dict[str, Any]:
 async def generate_study_guide(request: Request, file: UploadFile = File(...)) -> dict[str, Any]:
     if not AI_CONFIGURED:
         raise HTTPException(status_code=503, detail="AI generation is not connected yet. Configure OPENAI_API_KEY on the hosting server.")
-    enforce_ai_generation_quota(request)
     filename = file.filename or "lecture.pptx"
     if not filename.lower().endswith(".pptx"):
         raise HTTPException(status_code=400, detail="Please upload a PowerPoint .pptx file.")
@@ -390,6 +389,8 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
     source_text, slide_count = extract_pptx_text(data)
+    # Count only valid, readable uploads against the shared AI allowance.
+    enforce_ai_generation_quota(request)
     prompt = (
         f"Create a study guide from this lecture PowerPoint. Original file: {filename}. Slides detected: {slide_count}.\n\n"
         "LECTURE CONTENT (organized by slide):\n" + source_text
@@ -419,11 +420,11 @@ MODE_SPECS = {
 async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any]:
     if not AI_CONFIGURED:
         raise HTTPException(status_code=503, detail="AI generation is not connected. Configure OPENAI_API_KEY on the hosting server.")
-    enforce_ai_generation_quota(request)
     mode = payload.mode.upper().strip()
     if mode not in MODE_SPECS:
         raise HTTPException(status_code=400, detail="Choose one of the five available quiz modes.")
     count, mix_instruction = MODE_SPECS[mode]
+    enforce_ai_generation_quota(request)
     prompt = (
         f"Lecture title: {payload.lecture_title}\nSelected mode: {mode}\n"
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
