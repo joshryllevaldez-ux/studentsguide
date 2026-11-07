@@ -702,6 +702,26 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     @media(max-width:620px){.sg-orbit-bulb{width:38px;height:38px;left:0;top:29%}.sg-orbit-book{width:33px;height:33px;right:1%;top:10%;font-size:18px}.sg-orbit-brain{width:31px;height:31px;left:4%;bottom:7%;font-size:21px}.sg-orbit-star{width:24px;height:24px;right:4%;bottom:12%;font-size:16px}}
     @media(prefers-reduced-motion:reduce){.sg-orbit-icon,.hero-scene .scene-spark,.hero-scene .scene-particle,.hero-scene .scene-cap,.hero-scene .book-stack{animation:none!important}}
 
+
+    /* StudentsGUIDE 2.0: local learning progress dashboard */
+    .sg-progress-section{padding-top:22px!important}
+    .sg-progress-card{max-width:900px;margin:0 auto;background:linear-gradient(145deg,#101f48,#0a1536);border:1px solid #34558a;border-radius:24px;padding:24px;box-shadow:0 22px 55px #0005;color:#f4f7ff}
+    .sg-progress-empty{text-align:center;padding:25px 12px}
+    .sg-progress-symbol{width:54px;height:54px;border-radius:17px;margin:0 auto 13px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,#087bff,#00bfe9);box-shadow:0 0 28px #087bff55}
+    .sg-progress-empty h3,.sg-progress-card h3{margin:0 0 7px;color:#fff;font:800 18px Manrope,sans-serif}
+    .sg-progress-empty p,.sg-progress-card p{color:#b8c7e8;font-size:12px;line-height:1.6;margin:0}
+    .sg-progress-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+    .sg-progress-stat{padding:14px;border-radius:15px;background:#ffffff0a;border:1px solid #ffffff17}
+    .sg-progress-stat small{display:block;color:#a9c2e8;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+    .sg-progress-stat strong{display:block;color:#fff;font:900 25px Manrope,sans-serif;margin-top:5px}
+    .sg-attempt-list{display:grid;gap:8px;margin-top:12px}
+    .sg-attempt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid #ffffff18;background:#ffffff08;border-radius:13px}
+    .sg-attempt strong{display:block;color:#fff;font-size:12px}
+    .sg-attempt small{display:block;color:#a9c2e8;font-size:10px;margin-top:4px}
+    .sg-attempt-score{font:900 17px Manrope,sans-serif;color:#71d8ff;white-space:nowrap}
+    .sg-progress-note{margin-top:13px!important;font-size:10px!important;color:#9fb5d8!important}
+    @media(max-width:620px){.sg-progress-card{padding:16px}.sg-progress-stats{gap:7px}.sg-progress-stat{padding:10px}.sg-progress-stat strong{font-size:20px}.sg-attempt{padding:10px}}
+
 </style>
 </head>
 <body>
@@ -759,7 +779,6 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
               </div>
             </div>
             <p class="hero-copy">Turn your lecture slides into clear study guides, simplified explanations, real examples, brainhacks, and interactive quizzes, all in one intelligent learning platform.</p>
-            <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('pptInput').click()"><span class="cta-upload-icon">↑</span> Create my study guide <span>✦</span></button></div>
             <div class="hero-benefits"><span><b>✦</b> Save time</span><span><b>◎</b> Understand faster</span><span><b>▥</b> Be exam-ready</span></div>
           </div>
           <div class="hero-scene" aria-label="Illustration of study books and a laptop displaying StudentsGUIDE">
@@ -812,13 +831,11 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
               <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
               <strong>Drag & drop your lecture slides here</strong>
               <p>or <span class="browse" id="browseLink">browse files</span></p>
-              <span class="small-pill">PowerPoint (.PPTX) · Max 50 MB</span>
+              <span class="small-pill">PowerPoint (.PPTX) · Checking limit…</span>
             </div>
             <input id="pptInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
             <div class="file-line hidden" id="fileLine"><div class="file-meta"><div class="ppt-icon">PPTX</div><div style="min-width:0"><div class="file-name" id="fileName">Lecture.pptx</div><div class="file-size" id="fileSize">0 MB</div></div></div><button class="remove-file" id="removeFile" aria-label="Remove file">×</button></div>
             <button class="btn btn-primary full" id="generateBtn" disabled>Generate my Study Guide <span>✦</span></button>
-            <div class="status-line" id="apiStatus"><span class="status-dot"></span><span>Checking AI connection…</span></div>
-            <div class="api-notice hidden" id="apiNotice"></div>
             <p class="privacy-note">Your PowerPoint is processed by the application server to create the requested learning materials. Do not upload confidential or restricted lecture content without permission.</p>
           </div>
         </div>
@@ -854,7 +871,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 
   <main id="guideView" class="app-shell hidden"><div class="container">
     <div class="app-top"><div><button class="back-link" onclick="goHome()">← Back to home</button><h1 class="app-title">Your study guide</h1><p class="app-sub" id="guideMeta">Generated from your uploaded lecture</p></div><span class="small-pill" id="guideModeBadge">AI-GENERATED GUIDE</span></div>
-    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Download it as a PDF, then use the same lecture content to generate an interactive quiz.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
+    <div class="guide-layout"><section class="guide-main" id="guideContent"></section><aside class="side-card"><h3>Your learning pack</h3><p>Your study guide is ready. Nothing downloads automatically. Choose an action below when you are ready.</p><div class="side-stat"><span>Lecture slides</span><strong id="slideCount">—</strong></div><div class="side-stat"><span>Study topics</span><strong id="topicCount">—</strong></div><div class="side-stat"><span>File</span><strong id="sourceName" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</strong></div><button class="btn btn-light full" id="downloadPdf">↓ Download Study Guide PDF</button><button class="btn btn-primary full" id="goQuiz">Go to my Interactive Quiz →</button><button class="text-button full" onclick="goHome()">Upload another lecture</button></aside></div>
   </div></main>
 
   <main id="modeView" class="app-shell hidden"><div class="container">
@@ -878,7 +895,8 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     <section id="resultsContent"></section>
   </div></main>
 
-  <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div></div></footer>
+  <section class="section sg-progress-section" id="myProgress"><div class="container"><div class="section-head"><div class="section-kicker">YOUR LEARNING JOURNEY</div><h2>Keep your progress moving</h2><p>Your recent quiz attempts are saved in this browser so you can revisit your learning progress.</p></div><div class="sg-progress-card" id="studyProgressCard"><div class="sg-progress-empty"><span class="sg-progress-symbol">◎</span><h3>Your study progress starts here</h3><p>Complete a quiz to see your scores, recent attempts, and topics to revisit.</p></div></div></div></section>
+    <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div></div></footer>
 
   <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite"><div class="loading-card sg-loading-card">
     <div class="sg-loader-art" role="img" aria-label="Animated graduation cap and open book loading indicator">
@@ -923,6 +941,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
   <script>
     const $ = (id) => document.getElementById(id);
     let selectedFile = null;
+    let maxUploadMb = 20;
     let aiConfigured = false;
     let currentGuide = null;
     let currentQuiz = null;
@@ -955,18 +974,15 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     function formatSize(bytes){return bytes<1024*1024?`${(bytes/1024).toFixed(0)} KB`:`${(bytes/1024/1024).toFixed(2)} MB`;}
     async function checkStatus(){
       try{const r=await fetch('/api/status'); const data=await r.json(); aiConfigured=!!data.ai_configured;
-        $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
-        $('apiStatus').innerHTML=`<span class="status-dot"></span><span>${aiConfigured?`AI connected · ${escapeHtml(data.model)}`:'AI connection needs setup'}</span>`;
-        $('apiNotice').classList.toggle('hidden',aiConfigured);
-        if(!aiConfigured)$('apiNotice').textContent='The website interface is ready, but live AI generation needs an API key configured on the server. A ChatGPT subscription does not automatically connect an API key.';
-        else {$('apiNotice').classList.add('connected');$('apiNotice').textContent='AI generation is connected. Your uploaded lecture will be processed by the server-side model.';}
-        if(aiConfigured){$('apiNotice').classList.remove('hidden');}
-      }catch(e){$('apiStatus').className='status-line error';$('apiStatus').innerHTML='<span class="status-dot"></span><span>Could not reach the app server</span>';}
+        maxUploadMb=Number(data.max_upload_mb)||20;
+        const uploadLimitPill=document.querySelector('#dropzone .small-pill');if(uploadLimitPill)uploadLimitPill.textContent='PowerPoint (.PPTX) · Max '+maxUploadMb+' MB';
+
+      }catch(e){console.warn('StudentsGUIDE status check failed:',e);}
     }
     function setFile(file){
       if(!file)return;
       if(!file.name.toLowerCase().endsWith('.pptx')){toast('Please choose a PowerPoint .pptx file.');return;}
-      if(file.size>50*1024*1024){toast('This file is larger than 50 MB. Choose a smaller PowerPoint.');return;}
+      if(file.size>maxUploadMb*1024*1024){toast('This file is larger than '+maxUploadMb+' MB. Choose a smaller PowerPoint.');return;}
       selectedFile=file;$('fileName').textContent=file.name;$('fileSize').textContent=formatSize(file.size);$('fileLine').classList.remove('hidden');$('generateBtn').disabled=false;
     }
     $('pptInput').addEventListener('change',e=>setFile(e.target.files[0]));
@@ -996,7 +1012,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
         const data=await response.json();
         if(!response.ok)throw new Error(data.detail||'The study guide could not be generated.');
-        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();$('loadingTitle').textContent='Formatting your PDF';$('loadingMessage').textContent='Your guide is ready. StudentsGUIDE is preparing the downloadable PDF.';$('loadingStep').textContent='STEP 3 OF 3 · CREATING PDF';await downloadStudyPdf(true);hideLoading();showGuide();toast('Your study guide and PDF are ready.');
+        currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();hideLoading();showGuide();toast('Your study guide is ready. Choose what you want to do next.');
       }catch(error){hideLoading();toast(error.message||'Something went wrong while generating the guide.',5500);}
     }
     function loadSamplePreview(){
@@ -1090,8 +1106,36 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       const correct=currentQuiz.questions.filter(q=>answers[q.id]&&normalizeAnswer(q,answers[q.id])).length;
       renderResults(correct,total);hideViews();$('resultsView').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     };
+    function getSavedAttempts(){
+      try{const value=JSON.parse(localStorage.getItem('sg_quiz_attempts_v1')||'[]');return Array.isArray(value)?value:[];}catch(e){return [];}
+    }
+    function saveQuizAttempt(correct,total){
+      const topics={};
+      currentQuiz.questions.forEach(q=>{
+        const key=String(q.topic||'General').trim()||'General';
+        if(!topics[key])topics[key]={correct:0,total:0};
+        topics[key].total++;
+        if(answers[q.id]&&normalizeAnswer(q,answers[q.id]))topics[key].correct++;
+      });
+      const attempt={title:currentGuide?.title||currentQuiz.quiz_title||'Study session',mode:currentQuiz.mode||'Quiz',correct,total,percent:Math.round(correct/total*100),date:new Date().toISOString(),topics};
+      const attempts=getSavedAttempts();attempts.unshift(attempt);
+      try{localStorage.setItem('sg_quiz_attempts_v1',JSON.stringify(attempts.slice(0,20)));}catch(e){toast('Progress could not be saved in this browser.');}
+      renderStudyDashboard();
+    }
+    function renderStudyDashboard(){
+      const host=$('studyProgressCard');if(!host)return;
+      const attempts=getSavedAttempts();
+      if(!attempts.length){host.innerHTML='<div class="sg-progress-empty"><span class="sg-progress-symbol">◎</span><h3>Your study progress starts here</h3><p>Complete a quiz to see your scores, recent attempts, and topics to revisit.</p></div>';return;}
+      const total=attempts.reduce((sum,a)=>sum+(Number(a.total)||0),0);
+      const correct=attempts.reduce((sum,a)=>sum+(Number(a.correct)||0),0);
+      const average=total?Math.round(correct/total*100):0;
+      const latest=attempts[0];
+      const weak=Object.entries(latest.topics||{}).filter(([k,v])=>v.total&&v.correct/v.total<.7).sort((a,b)=>(a[1].correct/a[1].total)-(b[1].correct/b[1].total)).slice(0,3);
+      host.innerHTML='<div class="sg-progress-stats"><div class="sg-progress-stat"><small>Quiz attempts</small><strong>'+attempts.length+'</strong></div><div class="sg-progress-stat"><small>Overall accuracy</small><strong>'+average+'%</strong></div><div class="sg-progress-stat"><small>Questions answered</small><strong>'+total+'</strong></div></div><h3>Recent practice</h3><div class="sg-attempt-list">'+attempts.slice(0,5).map(a=>'<div class="sg-attempt"><div><strong>'+escapeHtml(a.title)+' · '+escapeHtml(a.mode)+'</strong><small>'+new Date(a.date).toLocaleDateString()+' · '+a.correct+'/'+a.total+' correct</small></div><span class="sg-attempt-score">'+a.percent+'%</span></div>').join('')+'</div>'+(weak.length?'<p class="sg-progress-note">Latest attempt: revisit '+weak.map(x=>escapeHtml(x[0])).join(', ')+'.</p>':'<p class="sg-progress-note">Your latest attempt shows no topic below 70% accuracy. Keep practising to reinforce retention.</p>')+'<p class="sg-progress-note">Stored locally in this browser. Clearing browser data will remove this history; it is not synced across devices.</p>';
+    }
     function renderResults(correct,total){
       const percent=Math.round(correct/total*100);const incorrect=currentQuiz.questions.filter(q=>!answers[q.id]||!normalizeAnswer(q,answers[q.id]));
+      if(!isSamplePreview)saveQuizAttempt(correct,total);
       let html=`<div class="results-hero"><div><div class="results-metrics"><div class="result-metric"><div class="result-metric-label">YOUR SCORE</div><div class="result-metric-value">${correct}/${total}</div></div><div class="result-metric"><div class="result-metric-label">PERCENTAGE</div><div class="result-metric-value">${percent}%</div></div></div><p class="results-message">${percent>=85?'Excellent work.':percent>=70?'Good progress. Review the missed questions.':percent>=50?'Keep practising. Focus on the explanations below.':'Use the study guide to revisit the key topics, then try again.'}</p></div><div style="font-size:44px">${percent>=80?'🏆':percent>=60?'📘':'🎯'}</div></div><div class="guide-main"><h2>Review your answers</h2><p class="overview">${incorrect.length?`${incorrect.length} question(s) need another look. Review the correct answer and explanation for each one.`:'You answered every question correctly. Review the topics once more to reinforce them.'}</p>`;
       (incorrect.length?incorrect:currentQuiz.questions).forEach(q=>{const right=answers[q.id]&&normalizeAnswer(q,answers[q.id]);html+=`<div class="result-item"><h4>Q${q.id}. ${escapeHtml(q.question)}</h4><p class="${right?'correct-text':'wrong-text'}">${right?'Correct':'Review needed'} · Your answer: ${escapeHtml(answers[q.id]||'Not answered')} · Correct answer: ${escapeHtml(q.correct_answer)}</p><p><b>Explanation:</b> ${escapeHtml(q.explanation)}</p>${q.example?`<p><b>Example:</b> ${escapeHtml(q.example)}</p>`:''}${q.brainhack?`<div class="brain-box"><b>✦ BRAIN HACK</b>${escapeHtml(q.brainhack)}</div>`:''}</div>`;});
       html+=`<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:20px"><button class="btn btn-primary" onclick="retakeQuiz()">Try this quiz again</button><button class="btn btn-light" onclick="showGuide()">Return to study guide</button><button class="btn btn-light" onclick="showModes()">Choose another mode</button></div></div>`;
@@ -1099,6 +1143,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
     }
     window.retakeQuiz=()=>{answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();};
 
+    renderStudyDashboard();
     checkStatus();
   </script>
 </body>
