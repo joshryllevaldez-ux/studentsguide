@@ -671,6 +671,18 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 @keyframes sgPct100{0%,84%,100%{opacity:0}85%,99%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.sg-cap,.sg-tassel,.sg-book,.sg-page-left,.sg-page-right,.sg-sparkles,.sg-progress-fill,.sg-progress-shine,.sg-check,.sg-pct{animation:none!important}.sg-progress-fill{transform:scaleX(.65)!important}.sg-pct-60{opacity:1!important}}
 @media(max-width:480px){.sg-loading-card{padding:18px 18px 22px!important}.sg-loader-art{width:100%}}
+
+    /* StudentsGUIDE motion layer */
+    .sg-study-mascot{position:absolute;z-index:8;right:7%;top:7%;width:112px;height:128px;display:grid;place-items:center;animation:sgMascotFloat 4.8s ease-in-out infinite;filter:drop-shadow(0 14px 18px #123b9b28);pointer-events:none}
+    .sg-study-mascot svg{width:100%;height:100%;overflow:visible}.sg-mascot-halo{position:absolute;inset:15px 7px 10px;border-radius:48%;background:radial-gradient(ellipse,#56c9ff38,transparent 70%);filter:blur(5px);z-index:-1}
+    .sg-mascot-wave{transform-origin:105px 41px;animation:sgMascotWave 2.8s ease-in-out infinite}.sg-mascot-blink{transform-origin:center;animation:sgMascotBlink 5s infinite}
+    .feature{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;will-change:transform}.feature:hover{transform:translateY(-7px);box-shadow:0 20px 42px rgba(23,67,134,.16);border-color:#b8d7ff}.feature:hover .feature-icon{transform:translateY(-3px) rotate(-5deg)}.feature-icon{transition:transform .28s ease}
+    .sg-results-celebrate{position:relative;overflow:hidden}.sg-results-celebrate>div:last-child{animation:sgTrophyPop .75s cubic-bezier(.2,1.6,.4,1) both;transform-origin:center}
+    .sg-results-celebrate:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#f8bd18 2px,transparent 3px),radial-gradient(circle,#2787f5 2px,transparent 3px),radial-gradient(circle,#b46bff 2px,transparent 3px),radial-gradient(circle,#10b981 2px,transparent 3px);background-size:47px 53px,61px 59px,73px 67px,83px 71px;background-position:4px 8px,21px 14px,33px 4px,11px 29px;animation:sgConfettiFade 2.3s ease-out forwards}
+    @keyframes sgMascotFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}}@keyframes sgMascotWave{0%,65%,100%{transform:rotate(0)}72%{transform:rotate(18deg)}80%{transform:rotate(-12deg)}88%{transform:rotate(14deg)}}@keyframes sgMascotBlink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.12)}}@keyframes sgTrophyPop{0%{transform:scale(.55) rotate(-12deg);opacity:.2}100%{transform:scale(1) rotate(0);opacity:1}}@keyframes sgConfettiFade{0%{opacity:0;transform:translateY(-12px)}18%{opacity:1}100%{opacity:0;transform:translateY(15px)}}
+    @media(prefers-reduced-motion:reduce){.sg-study-mascot,.sg-mascot-wave,.sg-mascot-blink,.feature,.feature-icon,.sg-results-celebrate>div:last-child,.sg-results-celebrate:after{animation:none!important;transition:none!important}}
+    @media(max-width:620px){.sg-study-mascot{width:76px;height:88px;right:1%;top:3%}}
+
 </style>
 </head>
 <body>
@@ -734,6 +746,17 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
               <div class="book book-orange"><span class="book-icon">✧</span><b>Examples</b></div>
               <div class="book book-purple"><span class="book-icon">❋</span><b>Brainhacks</b></div>
               <div class="book book-cyan"><span class="book-icon">☑</span><b>Practice Quiz</b></div>
+            </div>
+            <div class="sg-study-mascot" role="img" aria-label="Friendly animated StudentsGUIDE study assistant mascot">
+              <span class="sg-mascot-halo"></span>
+              <svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs><linearGradient id="sgBotBody" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#d8edff"/></linearGradient><linearGradient id="sgBotBlue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#42caff"/><stop offset="1" stop-color="#1264df"/></linearGradient></defs>
+                <path d="M60 10V20" stroke="#1264df" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="8" r="5" fill="#f8bd18"/>
+                <rect x="23" y="23" width="74" height="62" rx="22" fill="url(#sgBotBody)" stroke="#9bcfff" stroke-width="3"/><rect x="31" y="31" width="58" height="43" rx="15" fill="#102d69"/>
+                <g class="sg-mascot-blink"><ellipse cx="47" cy="50" rx="5" ry="7" fill="#67ddff"/><ellipse cx="73" cy="50" rx="5" ry="7" fill="#67ddff"/></g><path d="M48 62Q60 70 72 62" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                <path d="M23 48 13 53" stroke="#1264df" stroke-width="5" stroke-linecap="round"/><g class="sg-mascot-wave"><path d="M105 41Q114 29 116 18" fill="none" stroke="#1264df" stroke-width="7" stroke-linecap="round"/><circle cx="116" cy="16" r="7" fill="#f8bd18" stroke="#fff" stroke-width="2"/></g>
+                <path d="M40 85V97M80 85V97" stroke="#1264df" stroke-width="7" stroke-linecap="round"/><rect x="34" y="92" width="52" height="27" rx="12" fill="url(#sgBotBlue)" stroke="#fff" stroke-width="2"/><path d="M48 105h24" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="105" r="3" fill="#f8bd18"/>
+              </svg>
             </div>
             <div class="scene-cap"><svg viewBox="0 0 120 75" aria-hidden="true"><path d="M8 29 60 4l52 25-52 24L8 29Z" fill="#123b9b" stroke="#082b79" stroke-width="3"/><path d="M29 41v18c18 13 44 13 62 0V41L60 55 29 41Z" fill="#fff" stroke="#174cba" stroke-width="3"/><path d="M60 29v25" stroke="#f5bf2e" stroke-width="4"/><path d="M60 51c-7 8-6 14-2 20h8c4-6 5-12-2-20" fill="#f7bf29"/></svg></div>
             <div class="scene-laptop">
