@@ -4,11 +4,13 @@ import asyncio
 import html
 import io
 import json
+import logging
 import os
 import re
 import threading
 import time
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any
 
@@ -19,6 +21,7 @@ from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
@@ -57,9 +60,29 @@ if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.3.3"
-PROMPT_VERSION = "0.5"
-app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
+APP_VERSION = "0.4.0"
+PROMPT_VERSION = "0.6"
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+LOGGER = logging.getLogger("studentsguide")
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    application.state.http_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(180.0, connect=20.0),
+        limits=httpx.Limits(max_connections=8, max_keepalive_connections=4, keepalive_expiry=30.0),
+    )
+    LOGGER.info("service_started model=%s max_upload_mb=%s concurrency=%s", GEMINI_MODEL, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
+    try:
+        yield
+    finally:
+        await application.state.http_client.aclose()
+
+
+app = FastAPI(title="StudentsGUIDE", version=APP_VERSION, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
 
@@ -74,12 +97,24 @@ async def security_headers_and_request_limits(request: Request, call_next):
         except ValueError:
             return PlainTextResponse("Invalid request size header.", status_code=400)
 
-    response = await call_next(request)
-    response.headers.setdefault("X-Content-Type-Options", "nosniff")
-    response.headers.setdefault("X-Frame-Options", "DENY")
-    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-    return response
+    started = time.perf_counter()
+    response = None
+    try:
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        return response
+    finally:
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        LOGGER.info(
+            "http_request method=%s path=%s status=%s duration_ms=%.1f",
+            request.method,
+            request.url.path,
+            response.status_code if response is not None else 500,
+            elapsed_ms,
+        )
 
 
 def enforce_ai_generation_quota(request: Request) -> None:
@@ -123,6 +158,45 @@ class PdfRequest(BaseModel):
     guide: dict[str, Any]
 
 
+def _iter_slide_shapes(shapes):
+    """Yield top-level and grouped PowerPoint shapes in their slide order."""
+    for shape in shapes:
+        yield shape
+        if getattr(shape, "shape_type", None) == MSO_SHAPE_TYPE.GROUP:
+            yield from _iter_slide_shapes(shape.shapes)
+
+
+def _extract_shape_text(shape) -> list[str]:
+    """Extract readable text from a shape without attempting OCR."""
+    values: list[str] = []
+    if getattr(shape, "has_text_frame", False):
+        text = "\n".join(paragraph.text for paragraph in shape.text_frame.paragraphs).strip()
+        if text:
+            values.append(text)
+    if getattr(shape, "has_table", False):
+        for row in shape.table.rows:
+            row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+            if row_text:
+                values.append(row_text)
+    if getattr(shape, "has_chart", False):
+        try:
+            chart = shape.chart
+            categories: list[str] = []
+            try:
+                categories = [str(category.label) for category in chart.plots[0].categories]
+            except Exception:
+                categories = []
+            for series in chart.series:
+                series_name = str(getattr(series, "name", "Series")).strip() or "Series"
+                for index, value in enumerate(series.values):
+                    category = categories[index] if index < len(categories) else f"Item {index + 1}"
+                    values.append(f"Chart · {series_name} · {category}: {value}")
+        except Exception:
+            # A malformed or unsupported chart must not prevent other slides being read.
+            pass
+    return values
+
+
 def extract_pptx_text(data: bytes) -> tuple[str, int]:
     try:
         prs = Presentation(io.BytesIO(data))
@@ -132,26 +206,33 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
     slide_blocks: list[str] = []
     for index, slide in enumerate(prs.slides, start=1):
         lines: list[str] = []
-        for shape in slide.shapes:
-            if getattr(shape, "has_text_frame", False):
-                text = "\n".join(p.text for p in shape.text_frame.paragraphs).strip()
-                if text:
-                    lines.append(text)
-            if getattr(shape, "has_table", False):
-                for row in shape.table.rows:
-                    row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
-                    if row_text:
-                        lines.append(row_text)
-        if lines:
-            slide_blocks.append(f"SLIDE {index}\n" + "\n".join(lines))
+        for shape in _iter_slide_shapes(slide.shapes):
+            lines.extend(_extract_shape_text(shape))
+
+        try:
+            if slide.has_notes_slide:
+                notes = slide.notes_slide.notes_text_frame.text.strip()
+                if notes and notes.lower() not in {"slide number", str(index)}:
+                    lines.append("Speaker notes: " + notes)
+        except Exception:
+            pass
+
+        # Remove exact duplicates while retaining the original reading order.
+        unique_lines = list(dict.fromkeys(line.strip() for line in lines if line.strip()))
+        if unique_lines:
+            slide_blocks.append(f"SLIDE {index}\n" + "\n".join(unique_lines))
+        else:
+            slide_blocks.append(
+                f"SLIDE {index}\n[NO SELECTABLE TEXT FOUND: this slide may contain image-only content. "
+                "Visual text inside images has not been interpreted.]"
+            )
 
     text = "\n\n".join(slide_blocks).strip()
     if len(text) < 80:
-        raise HTTPException(status_code=422, detail="I could not find enough readable text in this PowerPoint. Check that the slides contain selectable text rather than only screenshots.")
+        raise HTTPException(status_code=422, detail="I could not find enough readable text in this PowerPoint. It may consist mainly of screenshots or image-only slides, which are not interpreted automatically.")
     if len(text) > MAX_SOURCE_CHARS:
-        text = text[:MAX_SOURCE_CHARS] + "\n\n[Content shortened to fit the processing limit.]"
+        text = text[:MAX_SOURCE_CHARS] + "\n\n[CONTENT TRUNCATED: the source exceeded the processing limit. Do not claim complete slide coverage.]"
     return text, len(prs.slides)
-
 
 def extract_output_text(payload: dict[str, Any]) -> str:
     direct = payload.get("output_text")
@@ -185,95 +266,111 @@ def parse_json_text(text: str) -> dict[str, Any]:
     return obj
 
 
-async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 6500) -> dict[str, Any]:
+async def ask_ai(
+    instructions: str,
+    user_input: str,
+    max_output_tokens: int = 6500,
+    operation: str = "generation",
+) -> dict[str, Any]:
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=503,
             detail="Gemini AI is not connected. The administrator must configure GEMINI_API_KEY on the hosting server.",
         )
 
+    output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
         "systemInstruction": {"parts": [{"text": instructions}]},
         "contents": [{
             "role": "user",
             "parts": [{
                 "text": (
-                    "Return only one valid JSON object. Do not use Markdown code fences. "
-                    "The response must be JSON.\n\n" + user_input
+                    "Return exactly one valid JSON object. Do not use Markdown fences. "
+                    "The response must be valid JSON.\n\n" + user_input
                 )
             }]
         }],
         "generationConfig": {
             "responseMimeType": "application/json",
-            # Gemini 3.x counts internal thinking tokens against maxOutputTokens.
-            # LOW reserves more of the response budget for the actual JSON payload.
+            # Low thinking reduces latency; maxOutputTokens still includes thinking tokens.
             "thinkingConfig": {"thinkingLevel": "LOW"},
-            "maxOutputTokens": max_output_tokens,
+            "maxOutputTokens": output_limit,
         },
     }
-    headers = {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-    }
+    headers = {"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"}
+    started = time.perf_counter()
 
     try:
         async with _AI_SEMAPHORE:
-            async with httpx.AsyncClient(
-                timeout=httpx.Timeout(180.0, connect=20.0)
-            ) as client:
+            client = getattr(app.state, "http_client", None)
+            if client is None:
+                # Allows local scripts/tests that invoke the function without ASGI lifespan.
+                async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as fallback:
+                    response = await fallback.post(
+                        f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
+                        headers=headers,
+                        json=body,
+                    )
+            else:
                 response = await client.post(
                     f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent",
                     headers=headers,
                     json=body,
                 )
     except httpx.TimeoutException as exc:
-        raise HTTPException(
-            status_code=504,
-            detail="Gemini took too long to respond. Try a smaller PowerPoint or quiz.",
-        ) from exc
+        LOGGER.warning("gemini_timeout operation=%s duration_ms=%.1f", operation, (time.perf_counter() - started) * 1000)
+        raise HTTPException(status_code=504, detail="Gemini took too long to respond. Try again, or use a smaller quiz mode.") from exc
     except httpx.HTTPError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="StudentsGUIDE could not reach Gemini. Check the server connection.",
-        ) from exc
+        LOGGER.exception("gemini_connection_error operation=%s", operation)
+        raise HTTPException(status_code=502, detail="StudentsGUIDE could not reach Gemini. Check the server connection.") from exc
 
+    elapsed_ms = (time.perf_counter() - started) * 1000
     if response.status_code >= 400:
         try:
             error = response.json().get("error", {})
             detail = error.get("message", "Gemini rejected the request.")
         except Exception:
             detail = "Gemini rejected the request."
-        raise HTTPException(
-            status_code=429 if response.status_code == 429 else 502,
-            detail=f"Gemini service error: {detail}",
+        LOGGER.warning(
+            "gemini_error operation=%s model=%s status=%s duration_ms=%.1f input_chars=%s detail=%s",
+            operation, GEMINI_MODEL, response.status_code, elapsed_ms, len(user_input), detail[:300],
         )
+        status_code = 429 if response.status_code == 429 else (503 if response.status_code == 503 else 502)
+        raise HTTPException(status_code=status_code, detail=f"Gemini service error: {detail}")
 
     payload = response.json()
     candidates = payload.get("candidates", [])
     if not candidates:
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini returned no response. Try a smaller lecture or quiz.",
-        )
+        LOGGER.warning("gemini_empty_candidates operation=%s duration_ms=%.1f", operation, elapsed_ms)
+        raise HTTPException(status_code=502, detail="Gemini returned no response. Please try again.")
 
     candidate = candidates[0]
-    if candidate.get("finishReason") == "MAX_TOKENS":
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini reached its response-length limit. Try a smaller lecture or quiz mode.",
-        )
-
+    finish_reason = candidate.get("finishReason", "UNKNOWN")
     parts = candidate.get("content", {}).get("parts", [])
     output = "\n".join(
         part.get("text", "")
         for part in parts
-        if isinstance(part, dict) and part.get("text")
+        if isinstance(part, dict) and part.get("text") and not part.get("thought", False)
     ).strip()
-    if not output:
+    usage = payload.get("usageMetadata", {})
+    LOGGER.info(
+        "gemini_complete operation=%s model=%s duration_ms=%.1f input_chars=%s output_chars=%s "
+        "finish_reason=%s prompt_tokens=%s output_tokens=%s thinking_tokens=%s",
+        operation, GEMINI_MODEL, elapsed_ms, len(user_input), len(output), finish_reason,
+        usage.get("promptTokenCount"), usage.get("candidatesTokenCount"), usage.get("thoughtsTokenCount"),
+    )
+
+    if finish_reason == "MAX_TOKENS":
         raise HTTPException(
             status_code=502,
-            detail="Gemini returned an empty response. Please try again.",
+            detail=(
+                "The AI reached Gemini's maximum response size before completing the result. "
+                "The request was not accepted as complete. Try a smaller lecture or quiz mode; "
+                "the server log now records token usage to help identify the limit."
+            ),
         )
+    if not output:
+        raise HTTPException(status_code=502, detail="Gemini returned an empty response. Please try again.")
     return parse_json_text(output)
 
 STUDY_GUIDE_INSTRUCTIONS = """You are StudentsGUIDE, an expert university-level tutor and meticulous lecture-to-learning designer. Your job is to transform the supplied PowerPoint text into a genuinely useful, comprehensive study guide that helps a student understand, remember, and apply the lecture—not merely summarize it.
@@ -288,17 +385,17 @@ SOURCE FIDELITY AND COVERAGE
 - Do not claim full coverage unless the content actually supports it.
 
 TEACHING STANDARD
-- Organize the guide into as many sections as the lecture needs (normally 5-14; more if necessary). Do not force 3-8 sections if that would merge distinct examinable topics.
+- Organize the guide into the smallest practical number of coherent sections (normally 4-10; use more only when the lecture has genuinely distinct examinable topics). Never merge unrelated topics or omit substantive slide content.
 - Each section should teach a coherent topic. Use clear headings and preserve the lecture's logical order.
 - Explain concepts in plain, student-friendly language first, then retain the correct technical terminology.
 - For each important concept, explain: what it is, how it works, why it matters, and where/how it is used when the source provides that information.
 - Break processes, workflows, formulas, and mechanisms into numbered steps. Explain what happens at each step and why.
 - Explain comparisons explicitly: show what is different, what is similar, and why the distinction matters. Do not invent comparison facts absent from the lecture.
-- Include worked examples grounded in the lecture. Give at least one example per major section; give two or more when a section contains several distinct difficult concepts and the source supports them. Make examples concrete and explanatory, not merely restatements.
+- Include one useful worked example per section when the source supports one. Add another only when needed to explain a genuinely different formula or concept. Keep the scenario concise and make the steps teach the reasoning.
 - For calculations or formulas, preserve exact source notation and values, define variables when provided, show each calculation step, and explain the result. If the source contains no calculation, do not invent one.
 - Include common mistakes or misconceptions only when they can be derived safely from the source; label them as study cautions, not as claims made by the lecturer.
 - Brainhacks must be genuinely useful retrieval cues: mnemonic, keyword association, analogy, sequence cue, or memory formula. Explain what each part of the cue means. Never use a catchy cue that distorts the facts.
-- Add a quick self-check question and answer to each section to encourage active recall.
+- Add one concise self-check question and answer to each section. Keep optional fields concise: usually 2-4 key points, 1-3 steps, up to 5 important terms, and no more than 3 exam-focus items per section. Do not repeat the same idea across fields.
 - Highlight exam focus: definitions, distinctions, steps, named models, case-study facts, formulas, and likely application points supported by the lecture.
 - Avoid filler, repetitive introductions, vague praise, and overly compressed bullet lists. Prefer meaningful explanation over artificial brevity.
 
@@ -337,12 +434,17 @@ Return ONLY valid JSON, no Markdown fences, with this shape:
   "exam_tips": ["specific revision advice grounded in the lecture"],
   "coverage_note": "state whether substantive slide topics were covered; identify any missing text, image-only slides, unclear details, or truncation honestly"
 }
-Return a complete guide. Do not omit a topic merely because it seems less important. Prioritize source fidelity, complete coverage, deep understanding, and student learning over a short PDF."""
+Return a complete but efficient guide. Cover every substantive topic; do not repeat content. Aim for an explanation of approximately 80-130 words per section. Keep why_it_matters to 1-2 sentences, additional_examples to at most one genuinely useful extra example, and lists concise. Prioritize source fidelity and clear teaching over verbosity."""
 
 
-QUIZ_INSTRUCTIONS = """You are StudentsGUIDE's assessment generator. Generate questions ONLY from the lecture content provided. Do not test unsupported outside knowledge. Keep answer keys and explanations accurate to the source. Return ONLY valid JSON, without markdown fences, in this shape:
-{"quiz_title":"...","mode":"...","instructions":"...","questions":[{"id":1,"type":"mcq|true_false|scenario","topic":"...","context":"optional scenario context, otherwise empty string","question":"...","options":[{"label":"A","text":"..."},{"label":"B","text":"..."},{"label":"C","text":"..."},{"label":"D","text":"..."}],"correct_answer":"A|B|C|D|True|False","explanation":"complete explanation in clear language","example":"a short illustrative example; make the first question's example particularly detailed and step-by-step","brainhack":"a concise memory cue that preserves accuracy","source_basis":"briefly identify which lecture idea supports the answer"}]}
-For true_false questions, use exactly two options labelled True and False, and set correct_answer to the word True or False. For mcq and scenario questions, use four plausible options and set correct_answer to the correct option label. For scenario questions, give a realistic short situation that requires applying the lecture concept. Avoid trick questions and avoid repeating the same concept. The first question's explanation and example must be especially thorough. All other explanations must still be complete and teach why the answer is correct. Return exactly the requested number of questions."""
+QUIZ_INSTRUCTIONS = """You are StudentsGUIDE's assessment generator. Generate questions ONLY from the supplied lecture. Do not invent facts or test outside knowledge. Keep exact requested counts and types. Avoid repeated concepts.
+
+Return ONLY one valid JSON object:
+{"quiz_title":"...","mode":"...","instructions":"...","questions":[{"id":1,"type":"mcq|true_false|scenario","topic":"...","context":"short scenario context or empty string","question":"...","options":[{"label":"A","text":"..."},{"label":"B","text":"..."},{"label":"C","text":"..."},{"label":"D","text":"..."}],"correct_answer":"A|B|C|D|True|False","explanation":"clear reason the answer is correct","example":"short illustrative example","brainhack":"brief accurate memory cue","source_basis":"lecture idea supporting the answer"}]}
+
+True/false questions must have exactly True and False options and use correct_answer True or False. MCQ and scenario questions must have four plausible options and use the correct option label A-D. Scenarios must test application, not merely recall.
+
+Keep each question concise but useful: question generally under 35 words; explanation 25-50 words; example one sentence (the first question may use two); brainhack under 18 words; source_basis under 15 words. Do not omit explanations or memory cues. Return exactly the requested number of questions. For MIXED 40, return exactly 16 MCQ, 12 true_false, and 12 scenario questions. Do not add introductory essays or extra fields."""
 
 
 @app.get("/")
@@ -378,12 +480,20 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
     if not data:
         raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
-    source_text, slide_count = extract_pptx_text(data)
-    prompt = (
-        f"Create a study guide from this lecture PowerPoint. Original file: {filename}. Slides detected: {slide_count}.\n\n"
-        "LECTURE CONTENT (organized by slide):\n" + source_text
+    extraction_started = time.perf_counter()
+    source_text, slide_count = await asyncio.to_thread(extract_pptx_text, data)
+    extraction_ms = (time.perf_counter() - extraction_started) * 1000
+    LOGGER.info(
+        "pptx_extracted filename=%s bytes=%s slides=%s source_chars=%s duration_ms=%.1f",
+        filename, len(data), slide_count, len(source_text), extraction_ms,
     )
-    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=32768)
+    prompt = (
+        f"Create a source-faithful study guide. File: {filename}. Slide count: {slide_count}.\n"
+        "Preserve all examinable concepts, definitions, formulas, classifications and lecture examples. "
+        "Use concise teaching explanations and avoid repeating the same point.\n\n"
+        "LECTURE CONTENT BY SLIDE:\n" + source_text
+    )
+    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=65536, operation="study_guide")
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
@@ -418,7 +528,7 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
-    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=32768 if count >= 40 else 16384)
+    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=49152 if count >= 40 else 32768, operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}")
     questions = quiz.get("questions")
     if not isinstance(questions, list) or not questions:
         raise HTTPException(status_code=502, detail="The AI did not return a usable question list. Please generate the quiz again.")
@@ -636,7 +746,9 @@ def make_pdf(guide: dict[str, Any]) -> bytes:
 
 @app.post("/api/study-guide-pdf")
 async def study_guide_pdf(request: PdfRequest) -> StreamingResponse:
-    content = make_pdf(request.guide)
+    pdf_started = time.perf_counter()
+    content = await asyncio.to_thread(make_pdf, request.guide)
+    LOGGER.info("pdf_created bytes=%s sections=%s duration_ms=%.1f", len(content), len(request.guide.get("sections") or []), (time.perf_counter() - pdf_started) * 1000)
     filename = re.sub(r"[^A-Za-z0-9_-]+", "_", str(request.guide.get("title", "StudentsGUIDE_Study_Guide"))).strip("_")[:70] or "StudentsGUIDE_Study_Guide"
     return StreamingResponse(
         io.BytesIO(content), media_type="application/pdf",
