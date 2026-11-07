@@ -174,7 +174,7 @@ def extract_pptx_text(data: bytes) -> tuple[str, int]:
 
 
 
-def extract_pptx_images(data: bytes, max_images: int = 8, max_image_bytes: int = 1_500_000) -> list[dict[str, str]]:
+def extract_pptx_images(data: bytes, max_images: int = 6, max_image_bytes: int = 700_000) -> list[dict[str, str]]:
     """Collect a bounded set of embedded slide images for vision-capable AI analysis."""
     try:
         prs = Presentation(io.BytesIO(data))
