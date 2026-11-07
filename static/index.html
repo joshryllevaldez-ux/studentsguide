@@ -633,6 +633,44 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 #features .feature:nth-child(3):before{background:radial-gradient(circle at 100% 0%,#b46bff25,transparent 52%)!important}
 #features .feature:nth-child(4):before{background:radial-gradient(circle at 100% 0%,#10d99a20,transparent 52%)!important}
 #features .feature-icon{position:relative;z-index:1}
+
+/* StudentsGUIDE animated graduation-cap + open-book loader */
+.loading-overlay{background:rgba(3,9,30,.84)!important;backdrop-filter:blur(14px) saturate(135%)!important}
+.sg-loading-card{width:min(440px,100%)!important;padding:25px 28px 27px!important;border-radius:26px!important;background:radial-gradient(ellipse at 50% 0%,#16488b 0%,transparent 54%),linear-gradient(145deg,#101f49,#07132f)!important;border:1px solid #3d78bb!important;box-shadow:0 28px 90px #000a,0 0 55px #087bff25!important;color:#fff!important}
+.sg-loader-art{width:min(100%,330px);margin:0 auto 5px;filter:drop-shadow(0 10px 22px #087bff35)}
+.sg-loader-art svg{display:block;width:100%;height:auto;overflow:visible}
+.sg-cap{transform-origin:180px 104px;animation:sgCapMotion 7.2s ease-in-out infinite}
+.sg-tassel{transform-origin:180px 133px;animation:sgTasselSwing 7.2s ease-in-out infinite}
+.sg-book{transform-origin:180px 180px;animation:sgBookOpen 7.2s ease-in-out infinite}
+.sg-page-left{transform-origin:180px 165px;animation:sgPageLeft 7.2s ease-in-out infinite}
+.sg-page-right{transform-origin:180px 165px;animation:sgPageRight 7.2s ease-in-out infinite}
+.sg-sparkles{opacity:0;animation:sgSparkle 7.2s ease-in-out infinite}
+.sg-progress-fill{animation:sgBarFill 7.2s linear infinite;transform-box:fill-box}
+.sg-progress-shine{animation:sgShine 7.2s ease-in-out infinite}
+.sg-check{animation:sgCheck 7.2s ease-in-out infinite}
+.sg-pct{opacity:0;animation-duration:7.2s;animation-iteration-count:infinite}
+.sg-pct-0{animation-name:sgPct0}.sg-pct-20{animation-name:sgPct20}.sg-pct-40{animation-name:sgPct40}.sg-pct-60{animation-name:sgPct60}.sg-pct-80{animation-name:sgPct80}.sg-pct-100{animation-name:sgPct100}
+.sg-loading-card h3{color:#fff!important;font-size:20px!important;margin:0 0 8px!important}
+.sg-loading-card p{color:#d1e4ff!important;font-size:12px!important;line-height:1.7!important}
+.sg-loader-caption{font-size:9px;letter-spacing:1.4px;font-weight:900;color:#64dfff;margin:17px 0 8px}
+.sg-loading-card .loading-step{color:#a9c8ef!important;font-size:10px!important;letter-spacing:.7px}
+@keyframes sgCapMotion{0%,5%{transform:translateY(9px);opacity:.48;filter:drop-shadow(0 0 1px #087bff)}20%{transform:translateY(5px);opacity:.8}40%{transform:translateY(1px);opacity:.95;filter:drop-shadow(0 0 9px #159cff)}60%,80%{transform:translateY(0);opacity:1;filter:drop-shadow(0 0 13px #159cff)}100%{transform:translateY(0);opacity:1;filter:drop-shadow(0 0 20px #37dfff)}}
+@keyframes sgTasselSwing{0%,40%{transform:rotate(-8deg)}60%{transform:rotate(10deg)}80%{transform:rotate(-6deg)}100%{transform:rotate(0deg)}}
+@keyframes sgBookOpen{0%,5%{transform:scaleY(.72)}20%{transform:scaleY(.82)}40%{transform:scaleY(.9)}60%{transform:scaleY(.96)}80%,100%{transform:scaleY(1)}}
+@keyframes sgPageLeft{0%,20%{transform:rotate(-4deg)}40%,60%{transform:rotate(-9deg)}80%,100%{transform:rotate(-1deg)}}
+@keyframes sgPageRight{0%,20%{transform:rotate(4deg)}40%,60%{transform:rotate(9deg)}80%,100%{transform:rotate(1deg)}}
+@keyframes sgSparkle{0%,60%{opacity:0;transform:scale(.5)}80%{opacity:1;transform:scale(1)}100%{opacity:.35;transform:scale(.8)}}
+@keyframes sgBarFill{0%{transform:scaleX(0)}20%{transform:scaleX(.2)}40%{transform:scaleX(.4)}60%{transform:scaleX(.6)}80%{transform:scaleX(.8)}100%{transform:scaleX(1)}}
+@keyframes sgShine{0%,20%{opacity:0}40%,80%{opacity:.6}100%{opacity:0}}
+@keyframes sgCheck{0%,80%{opacity:0;transform:scale(.6)}90%,100%{opacity:1;transform:scale(1)}}
+@keyframes sgPct0{0%,12%{opacity:1}14%,100%{opacity:0}}
+@keyframes sgPct20{0%,14%,27%,100%{opacity:0}15%,26%{opacity:1}}
+@keyframes sgPct40{0%,29%,43%,100%{opacity:0}30%,42%{opacity:1}}
+@keyframes sgPct60{0%,45%,62%,100%{opacity:0}46%,61%{opacity:1}}
+@keyframes sgPct80{0%,64%,82%,100%{opacity:0}65%,81%{opacity:1}}
+@keyframes sgPct100{0%,84%,100%{opacity:0}85%,99%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.sg-cap,.sg-tassel,.sg-book,.sg-page-left,.sg-page-right,.sg-sparkles,.sg-progress-fill,.sg-progress-shine,.sg-check,.sg-pct{animation:none!important}.sg-progress-fill{transform:scaleX(.65)!important}.sg-pct-60{opacity:1!important}}
+@media(max-width:480px){.sg-loading-card{padding:18px 18px 22px!important}.sg-loader-art{width:100%}}
 </style>
 </head>
 <body>
@@ -794,7 +832,44 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 
   <footer class="footer" id="siteFooter"><div class="container footer-inner"><div><div class="footer-brand">StudentsGUIDE.com</div><p>Struggles less, study smart.</p></div><div class="footer-tag">A student-focused AI learning project · AIT111</div></div></footer>
 
-  <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite"><div class="loading-card"><div class="spinner-mark" style="width:190px;height:66px;border-radius:14px;border:1px solid #d8e8fb;animation:none;overflow:hidden;padding:4px"><img src="/assets/studentsguide-brand.png" alt="StudentsGUIDE logo" style="width:100%;height:100%;object-fit:contain;animation:logoTwirl 2s ease-in-out infinite;transform-style:preserve-3d"></div><h3 id="loadingTitle">Preparing your learning materials</h3><p id="loadingMessage">Reading the uploaded lecture and organizing the content.</p><div class="loading-track"><span></span></div><div class="loading-step" id="loadingStep">PLEASE WAIT</div></div></div>
+  <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite"><div class="loading-card sg-loading-card">
+    <div class="sg-loader-art" role="img" aria-label="Animated graduation cap and open book loading indicator">
+      <svg viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sgCapBlue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#48caff"/><stop offset=".45" stop-color="#087bff"/><stop offset="1" stop-color="#123eae"/></linearGradient>
+          <linearGradient id="sgPage" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#b9d9ff"/></linearGradient>
+          <linearGradient id="sgLoadBar" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#087bff"/><stop offset=".55" stop-color="#00d9ff"/><stop offset="1" stop-color="#69eaff"/></linearGradient>
+          <filter id="sgLoaderGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <ellipse cx="180" cy="196" rx="92" ry="10" fill="#087bff" opacity=".13"/>
+        <g class="sg-book">
+          <path d="M180 157Q136 132 83 147V180Q137 164 180 194Z" fill="url(#sgPage)" stroke="#74baff" stroke-width="3"/>
+          <path d="M180 157Q224 132 277 147V180Q223 164 180 194Z" fill="url(#sgPage)" stroke="#74baff" stroke-width="3"/>
+          <path d="M180 157V194" stroke="#087bff" stroke-width="3" stroke-linecap="round"/>
+          <path class="sg-page-left" d="M87 149Q131 139 171 161" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path class="sg-page-right" d="M273 149Q229 139 189 161" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M98 160Q133 153 160 168M100 169Q134 162 158 176M260 160Q225 153 200 168M258 169Q224 162 202 176" stroke="#7fb8f1" stroke-width="2" opacity=".7" fill="none"/>
+        </g>
+        <g class="sg-cap" filter="url(#sgLoaderGlow)">
+          <path d="M103 86 180 48 257 86 180 124Z" fill="url(#sgCapBlue)" stroke="#b9ecff" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M132 101V126Q180 157 228 126V101L180 125Z" fill="#f8fbff" stroke="#087bff" stroke-width="3"/>
+          <path d="M180 86V130" stroke="#ffc928" stroke-width="4" stroke-linecap="round"/>
+          <g class="sg-tassel"><circle cx="180" cy="131" r="5" fill="#ffd43b"/><path d="M180 134Q191 148 184 158L176 158Q171 145 180 134Z" fill="#ffc928" stroke="#fff0a3" stroke-width="2"/></g>
+        </g>
+        <g class="sg-sparkles" fill="#ffd34d"><path d="m75 74 4 10 10 4-10 4-4 10-4-10-10-4 10-4Z"/><path d="m286 88 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/></g>
+        <rect x="76" y="207" width="208" height="12" rx="6" fill="#102a58" stroke="#4e8fda" stroke-width="1.5"/>
+        <rect class="sg-progress-fill" x="78" y="209" width="204" height="8" rx="4" fill="url(#sgLoadBar)" transform="scale(0 1)" style="transform-origin:78px 0"/>
+        <path class="sg-progress-shine" d="M78 210h204" stroke="#fff" stroke-width="2" opacity="0"/>
+        <path class="sg-check" d="m164 212 10 9 22-25" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0" filter="url(#sgLoaderGlow)"/>
+        <g class="sg-percentages" font-family="Manrope,Arial,sans-serif" font-size="17" font-weight="900" text-anchor="middle" fill="#eaf8ff">
+          <text x="180" y="30" class="sg-pct sg-pct-0">0%</text><text x="180" y="30" class="sg-pct sg-pct-20">20%</text><text x="180" y="30" class="sg-pct sg-pct-40">40%</text><text x="180" y="30" class="sg-pct sg-pct-60">60%</text><text x="180" y="30" class="sg-pct sg-pct-80">80%</text><text x="180" y="30" class="sg-pct sg-pct-100">100%</text>
+        </g>
+      </svg>
+    </div>
+    <h3 id="loadingTitle">Preparing your learning materials</h3><p id="loadingMessage">Reading the uploaded lecture and organizing the content.</p>
+    <div class="sg-loader-caption">YOUR STUDY SPACE IS TAKING SHAPE</div>
+    <div class="loading-step" id="loadingStep">PLEASE WAIT</div>
+  </div></div>
   <div class="toast" id="toast" role="status"></div>
 
   <script>
