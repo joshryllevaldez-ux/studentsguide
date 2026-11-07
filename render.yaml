@@ -13,6 +13,8 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.8-flash
+      - key: GEMINI_FAST_MODEL
+        value: gemini-3.5-flash-lite
       - key: IP_AI_GENERATION_LIMIT_PER_HOUR
         value: "25"
       - key: DAILY_AI_GENERATION_LIMIT
