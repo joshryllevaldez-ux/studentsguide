@@ -57,7 +57,7 @@ if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.3.2"
+APP_VERSION = "0.3.3"
 PROMPT_VERSION = "0.5"
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -205,6 +205,9 @@ async def ask_ai(instructions: str, user_input: str, max_output_tokens: int = 65
         }],
         "generationConfig": {
             "responseMimeType": "application/json",
+            # Gemini 3.x counts internal thinking tokens against maxOutputTokens.
+            # LOW reserves more of the response budget for the actual JSON payload.
+            "thinkingConfig": {"thinkingLevel": "LOW"},
             "maxOutputTokens": max_output_tokens,
         },
     }
@@ -380,7 +383,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         f"Create a study guide from this lecture PowerPoint. Original file: {filename}. Slides detected: {slide_count}.\n\n"
         "LECTURE CONTENT (organized by slide):\n" + source_text
     )
-    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=12000)
+    guide = await ask_ai(STUDY_GUIDE_INSTRUCTIONS, prompt, max_output_tokens=32768)
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
@@ -415,7 +418,7 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         f"Requirement: {mix_instruction}\nExact number of questions: {count}.\n\n"
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
-    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=11000 if count >= 40 else 7500)
+    quiz = await ask_ai(QUIZ_INSTRUCTIONS, prompt, max_output_tokens=32768 if count >= 40 else 16384)
     questions = quiz.get("questions")
     if not isinstance(questions, list) or not questions:
         raise HTTPException(status_code=502, detail="The AI did not return a usable question list. Please generate the quiz again.")
