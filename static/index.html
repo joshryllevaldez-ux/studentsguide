@@ -993,6 +993,20 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       }
       return fallback+` (HTTP ${response.status}).`;
     }
+    async function fetchWithTimeout(url, options={}, timeoutMs=150000){
+      const controller=new AbortController();
+      const timeoutId=setTimeout(()=>controller.abort(),timeoutMs);
+      try{
+        return await fetch(url,{...options,signal:controller.signal});
+      }catch(error){
+        if(error.name==='AbortError'){
+          throw new Error(`StudentsGUIDE stopped waiting after ${Math.round(timeoutMs/1000)} seconds. The server may be overloaded or the AI provider may be responding slowly. Check Render → Logs before trying again.`);
+        }
+        throw error;
+      }finally{
+        clearTimeout(timeoutId);
+      }
+    }
     async function checkStatus(){
       try{const r=await fetch('/api/status',{cache:'no-store'}); const data=await readApiJson(r,'AI connection check'); aiConfigured=!!data.ai_configured;
         $('apiStatus').className='status-line '+(aiConfigured?'ready':'');
@@ -1061,7 +1075,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       const form=new FormData();form.append('file',selectedFile);
       showLoading('Creating your study guide','Reading your PowerPoint and generating the guide. The moving line is an activity indicator, not a percentage. The timer shows actual elapsed time.','POWERPOINT + AI GENERATION');
       try{
-        const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
+        const response=await fetchWithTimeout('/api/generate-study-guide',{method:'POST',body:form},150000);
         const data=await readApiJson(response,'Study guide generation');
         currentGuide=data;currentSourceText=data.source_text||'';isSamplePreview=false;renderGuide();
         $('loadingTitle').textContent='Formatting your PDF';
@@ -1122,7 +1136,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       generationInProgress=true;
       showLoading('Building your interactive quiz','Generating questions from your lecture. The elapsed timer shows real waiting time.','QUIZ GENERATION');
       try{
-        const r=await fetch('/api/generate-quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_text:currentSourceText,mode,lecture_title:currentGuide.title||'Uploaded lecture'})});
+        const r=await fetchWithTimeout('/api/generate-quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_text:currentSourceText,mode,lecture_title:currentGuide.title||'Uploaded lecture'})},150000);
         const data=await readApiJson(r,'Quiz generation');
         currentQuiz=data;answers={};flagged=new Set();revealed=new Set();currentQuestion=0;renderQuestion();showQuiz();toast(`${data.questions.length} questions generated.`);
       }catch(e){
