@@ -62,8 +62,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.5"
-PROMPT_VERSION = "1.0"
+APP_VERSION = "0.4.6"
+PROMPT_VERSION = "1.1"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -396,8 +396,8 @@ async def ask_ai(
     usage = payload.get("usageMetadata", {})
     LOGGER.info(
         "gemini_complete operation=%s model=%s duration_ms=%.1f input_chars=%s output_chars=%s "
-        "finish_reason=%s prompt_tokens=%s output_tokens=%s thinking_tokens=%s",
-        operation, model, elapsed_ms, len(user_input), len(output), finish_reason,
+        "finish_reason=%s output_budget=%s prompt_tokens=%s output_tokens=%s thinking_tokens=%s",
+        operation, model, elapsed_ms, len(user_input), len(output), finish_reason, output_limit,
         usage.get("promptTokenCount"), usage.get("candidatesTokenCount"), usage.get("thoughtsTokenCount"),
     )
 
@@ -537,7 +537,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide_output_budget = min(7500, 4500 + (len(source_text) // 6000) * 400)
+    guide_output_budget = min(24000, 16000 + (len(source_text) // 5000) * 750)
     guide = await ask_ai(
         STUDY_GUIDE_INSTRUCTIONS,
         prompt,
@@ -579,11 +579,11 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
     quiz_budgets = {
-        "MCQ 20": 5000,
-        "MCQ 10": 2800,
-        "TRUE OR FALSE 10": 1800,
-        "SCENARIO QUESTIONS 15": 5000,
-        "MIXED 40": 9000,
+        "MCQ 20": 9000,
+        "MCQ 10": 5000,
+        "TRUE OR FALSE 10": 3000,
+        "SCENARIO QUESTIONS 15": 9000,
+        "MIXED 40": 16000,
     }
     quiz = await ask_ai(
         QUIZ_INSTRUCTIONS,
