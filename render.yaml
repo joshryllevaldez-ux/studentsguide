@@ -20,7 +20,7 @@ services:
       - key: DAILY_AI_GENERATION_LIMIT
         value: "100"
       - key: AI_CONCURRENCY_LIMIT
-        value: "2"
+        value: "3"
       - key: AI_CALL_TIMEOUT_SECONDS
         value: "120"
       - key: AI_RESPONSE_CACHE_TTL_SECONDS

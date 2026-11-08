@@ -19,6 +19,7 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -70,7 +71,7 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.9"
+APP_VERSION = "0.4.10"
 PROMPT_VERSION = "1.2"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -93,6 +94,7 @@ async def lifespan(application: FastAPI):
 
 
 app = FastAPI(title="StudentsGUIDE", version=APP_VERSION, lifespan=lifespan)
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=5)
 
 
 @app.exception_handler(Exception)
@@ -513,7 +515,6 @@ async def ask_ai(
         max_output_tokens=max_output_tokens,
         operation=operation,
     )
-    _store_ai_response_cache(cache_key, result)
     return result
 
 
@@ -655,6 +656,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
     )
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
+    _store_ai_response_cache(_ai_cache_key(STUDY_GUIDE_INSTRUCTIONS, prompt, guide_output_budget, "study_guide"), guide)
     guide["title"] = str(guide.get("title") or os.path.splitext(filename)[0])
     guide["source_filename"] = filename
     guide["slide_count"] = slide_count
@@ -756,6 +758,10 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
     if len(clean) < count:
         raise HTTPException(status_code=502, detail=f"The AI returned {len(clean)} usable questions instead of {count}. Please try generating again.")
     quiz["questions"] = clean[:count]
+    _store_ai_response_cache(
+        _ai_cache_key(QUIZ_INSTRUCTIONS, prompt, quiz_budgets[mode], f"quiz_{mode.lower().replace(chr(32), chr(95))}"),
+        quiz,
+    )
     quiz["mode"] = mode
     quiz["lecture_title"] = payload.lecture_title
     quiz["generation_type"] = "AI-generated from uploaded lecture"
