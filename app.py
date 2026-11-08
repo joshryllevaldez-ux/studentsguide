@@ -49,6 +49,7 @@ MAX_REQUEST_BYTES = (MAX_UPLOAD_MB + 2) * 1024 * 1024
 IP_AI_GENERATION_LIMIT_PER_HOUR = int(os.getenv("IP_AI_GENERATION_LIMIT_PER_HOUR", "25"))
 DAILY_AI_GENERATION_LIMIT = int(os.getenv("DAILY_AI_GENERATION_LIMIT", "100"))
 AI_CONCURRENCY_LIMIT = max(1, int(os.getenv("AI_CONCURRENCY_LIMIT", "3")))
+AI_CALL_TIMEOUT_SECONDS = max(45, int(os.getenv("AI_CALL_TIMEOUT_SECONDS", "120")))
 _AI_SEMAPHORE = asyncio.Semaphore(AI_CONCURRENCY_LIMIT)
 _AI_LIMIT_LOCK = threading.Lock()
 _AI_REQUESTS_BY_IP: dict[str, deque[float]] = defaultdict(deque)
@@ -61,8 +62,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.3"
-PROMPT_VERSION = "0.8"
+APP_VERSION = "0.4.4"
+PROMPT_VERSION = "0.9"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -299,7 +300,9 @@ async def ask_ai(
         )
 
     fast_quiz_operations = {"quiz_mcq_20", "quiz_mcq_10", "quiz_true_or_false_10"}
-    model = GEMINI_FAST_MODEL if operation in fast_quiz_operations else GEMINI_MODEL
+    use_fast_model = operation == "study_guide" or operation in fast_quiz_operations
+    model = GEMINI_FAST_MODEL if use_fast_model else GEMINI_MODEL
+    thinking_level = "minimal" if use_fast_model else "low"
     output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
         "systemInstruction": {"parts": [{"text": instructions}]},
@@ -315,7 +318,7 @@ async def ask_ai(
         "generationConfig": {
             "responseMimeType": "application/json",
             # Low thinking reduces latency; maxOutputTokens still includes thinking tokens.
-            "thinkingConfig": {"thinkingLevel": "low"},
+            "thinkingConfig": {"thinkingLevel": thinking_level},
             "maxOutputTokens": output_limit,
         },
     }
@@ -343,17 +346,21 @@ async def ask_ai(
         return response
 
     try:
-        async with _AI_SEMAPHORE:
-            client = getattr(app.state, "http_client", None)
-            if client is None:
-                # Allows local scripts/tests that invoke the function without ASGI lifespan.
-                async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=20.0)) as fallback:
-                    response = await send_with_bounded_retry(fallback)
-            else:
-                response = await send_with_bounded_retry(client)
+        async with asyncio.timeout(AI_CALL_TIMEOUT_SECONDS):
+            async with _AI_SEMAPHORE:
+                client = getattr(app.state, "http_client", None)
+                if client is None:
+                    # Allows local scripts/tests that invoke the function without ASGI lifespan.
+                    async with httpx.AsyncClient(timeout=httpx.Timeout(125.0, connect=15.0)) as fallback:
+                        response = await send_with_bounded_retry(fallback)
+                else:
+                    response = await send_with_bounded_retry(client)
+    except TimeoutError as exc:
+        LOGGER.warning("gemini_total_timeout operation=%s model=%s limit_seconds=%s duration_ms=%.1f", operation, model, AI_CALL_TIMEOUT_SECONDS, (time.perf_counter() - started) * 1000)
+        raise HTTPException(status_code=504, detail=f"AI generation exceeded the {AI_CALL_TIMEOUT_SECONDS}-second safety limit. Please retry; if this repeats, check Render logs for the model response time.") from exc
     except httpx.TimeoutException as exc:
-        LOGGER.warning("gemini_timeout operation=%s duration_ms=%.1f", operation, (time.perf_counter() - started) * 1000)
-        raise HTTPException(status_code=504, detail="Gemini took too long to respond. Try again, or use a smaller quiz mode.") from exc
+        LOGGER.warning("gemini_network_timeout operation=%s duration_ms=%.1f", operation, (time.perf_counter() - started) * 1000)
+        raise HTTPException(status_code=504, detail="Gemini network request timed out. Please retry.") from exc
     except httpx.HTTPError as exc:
         LOGGER.exception("gemini_connection_error operation=%s", operation)
         raise HTTPException(status_code=502, detail="StudentsGUIDE could not reach Gemini. Check the server connection.") from exc
@@ -468,7 +475,7 @@ Return ONLY valid JSON, no Markdown fences, with this shape:
   "exam_tips": ["specific revision advice grounded in the lecture"],
   "coverage_note": "state whether substantive slide topics were covered; identify any missing text, image-only slides, unclear details, or truncation honestly"
 }
-Return a complete but efficient guide. Cover every substantive text-based slide exactly once or in a clearly related section. Keep each explanation around 60-100 words, why_it_matters to one sentence, worked examples to 3-5 concise steps, and optional lists short. Use only facts and examples supported by the uploaded lecture. If a diagram or image has no extractable text, disclose that limitation. Never invent missing content."""
+Return a complete but efficient guide. Cover every substantive text-based slide exactly once or in a clearly related section. Keep each explanation around 50-80 words, why_it_matters to one sentence, worked examples to 2-4 concise steps, and optional lists short. Use only facts and examples supported by the uploaded lecture. If a diagram or image has no extractable text, disclose that limitation. Never invent missing content."""
 
 
 QUIZ_INSTRUCTIONS = """You are StudentsGUIDE's assessment generator. Generate questions ONLY from the supplied lecture. Do not invent facts or test outside knowledge. Keep exact requested counts and types. Avoid repeated concepts.
@@ -527,7 +534,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide_output_budget = min(10000, 6000 + (len(source_text) // 5000) * 350)
+    guide_output_budget = min(7500, 4500 + (len(source_text) // 6000) * 400)
     guide = await ask_ai(
         STUDY_GUIDE_INSTRUCTIONS,
         prompt,
@@ -569,11 +576,11 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
     quiz_budgets = {
-        "MCQ 20": 7000,
-        "MCQ 10": 4000,
-        "TRUE OR FALSE 10": 3000,
-        "SCENARIO QUESTIONS 15": 6500,
-        "MIXED 40": 11000,
+        "MCQ 20": 5000,
+        "MCQ 10": 2800,
+        "TRUE OR FALSE 10": 1800,
+        "SCENARIO QUESTIONS 15": 5000,
+        "MIXED 40": 9000,
     }
     quiz = await ask_ai(
         QUIZ_INSTRUCTIONS,
