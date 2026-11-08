@@ -62,8 +62,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.6"
-PROMPT_VERSION = "1.1"
+APP_VERSION = "0.4.7"
+PROMPT_VERSION = "1.2"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -353,8 +353,30 @@ async def ask_ai(
                     # Allows local scripts/tests that invoke the function without ASGI lifespan.
                     async with httpx.AsyncClient(timeout=httpx.Timeout(125.0, connect=15.0)) as fallback:
                         response = await send_with_bounded_retry(fallback)
+                        if response.status_code < 400 and output_limit < 65536:
+                            initial_payload = response.json()
+                            initial_candidates = initial_payload.get("candidates", [])
+                            if initial_candidates and initial_candidates[0].get("finishReason") == "MAX_TOKENS":
+                                LOGGER.warning(
+                                    "gemini_length_recovery operation=%s model=%s initial_budget=%s retry_budget=65536",
+                                    operation, model, output_limit,
+                                )
+                                output_limit = 65536
+                                body["generationConfig"]["maxOutputTokens"] = output_limit
+                                response = await send_with_bounded_retry(fallback)
                 else:
                     response = await send_with_bounded_retry(client)
+                    if response.status_code < 400 and output_limit < 65536:
+                        initial_payload = response.json()
+                        initial_candidates = initial_payload.get("candidates", [])
+                        if initial_candidates and initial_candidates[0].get("finishReason") == "MAX_TOKENS":
+                            LOGGER.warning(
+                                "gemini_length_recovery operation=%s model=%s initial_budget=%s retry_budget=65536",
+                                operation, model, output_limit,
+                            )
+                            output_limit = 65536
+                            body["generationConfig"]["maxOutputTokens"] = output_limit
+                            response = await send_with_bounded_retry(client)
     except TimeoutError as exc:
         LOGGER.warning("gemini_total_timeout operation=%s model=%s limit_seconds=%s duration_ms=%.1f", operation, model, AI_CALL_TIMEOUT_SECONDS, (time.perf_counter() - started) * 1000)
         raise HTTPException(status_code=504, detail=f"AI generation exceeded the {AI_CALL_TIMEOUT_SECONDS}-second safety limit. Please retry; if this repeats, check Render logs for the model response time.") from exc
@@ -405,9 +427,9 @@ async def ask_ai(
         raise HTTPException(
             status_code=502,
             detail=(
-                "The AI reached Gemini's maximum response size before completing the result. "
-                "The request was not accepted as complete. Try a smaller lecture or quiz mode; "
-                "the server log now records token usage to help identify the limit."
+                "Gemini still reached its 65,536-token output ceiling after an automatic full-budget retry. "
+                "No incomplete study guide was returned. Split this PowerPoint into smaller lecture parts and retry; "
+                "the Render log records the model, output budget and token usage."
             ),
         )
     if not output:
@@ -537,7 +559,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide_output_budget = min(24000, 16000 + (len(source_text) // 5000) * 750)
+    guide_output_budget = min(32000, 18000 + (len(source_text) // 5000) * 1200)
     guide = await ask_ai(
         STUDY_GUIDE_INSTRUCTIONS,
         prompt,
