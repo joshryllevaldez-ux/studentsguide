@@ -58,11 +58,11 @@ _AI_DAILY_COUNT = 0
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 if GEMINI_API_KEY.lower() in {"your_api_key_here", "replace_me", "changeme"}:
     GEMINI_API_KEY = ""
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.7"
+APP_VERSION = "0.4.8"
 PROMPT_VERSION = "1.2"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -77,7 +77,7 @@ async def lifespan(application: FastAPI):
         timeout=httpx.Timeout(180.0, connect=20.0),
         limits=httpx.Limits(max_connections=8, max_keepalive_connections=4, keepalive_expiry=30.0),
     )
-    LOGGER.info("service_started study_model=%s applied_quiz_model=%s fast_model=%s timeout_seconds=%s max_upload_mb=%s concurrency=%s", GEMINI_FAST_MODEL, GEMINI_MODEL, GEMINI_FAST_MODEL, AI_CALL_TIMEOUT_SECONDS, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
+    LOGGER.info("service_started ai_model=%s timeout_seconds=%s max_upload_mb=%s concurrency=%s", GEMINI_FAST_MODEL, AI_CALL_TIMEOUT_SECONDS, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
     try:
         yield
     finally:
@@ -301,7 +301,7 @@ async def ask_ai(
 
     fast_quiz_operations = {"quiz_mcq_20", "quiz_mcq_10", "quiz_true_or_false_10"}
     use_fast_model = operation == "study_guide" or operation in fast_quiz_operations
-    model = GEMINI_FAST_MODEL if use_fast_model else GEMINI_MODEL
+    model = GEMINI_FAST_MODEL  # Use the high-throughput model for every mode to avoid the 20-request/day model quota.
     thinking_level = "minimal" if use_fast_model else "low"
     output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
@@ -523,7 +523,7 @@ async def status() -> dict[str, Any]:
         "ai_configured": bool(GEMINI_API_KEY),
         "model": GEMINI_FAST_MODEL if GEMINI_API_KEY else None,
         "study_model": GEMINI_FAST_MODEL if GEMINI_API_KEY else None,
-        "applied_quiz_model": GEMINI_MODEL if GEMINI_API_KEY else None,
+        "applied_quiz_model": GEMINI_FAST_MODEL if GEMINI_API_KEY else None,
         "generation_timeout_seconds": AI_CALL_TIMEOUT_SECONDS,
         "max_upload_mb": MAX_UPLOAD_MB,
         "supported_file": ".pptx",

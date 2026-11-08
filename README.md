@@ -55,13 +55,13 @@ StudentsGUIDE uses the Google Gemini Developer API. Create an API key in [Google
 1. Open the StudentsGUIDE service in Render.
 2. Open **Environment**.
 3. Add `GEMINI_API_KEY` as a secret environment variable and paste the key.
-4. Set `GEMINI_MODEL` to `gemini-3.8-flash`, `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS` to `120` if they are not already set. The main study-guide flow and simpler quiz modes use Flash-Lite; applied scenario and Mixed 40 modes use Flash.
+4. Set both `GEMINI_MODEL` and `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS` to `120` if they are not already set. All five quiz modes and study-guide generation now use Flash-Lite. The more demanding Scenario 15 and Mixed 40 modes use low thinking rather than switching to the lower-quota Flash model.
 5. Save changes and wait until the deployment is Live.
 
 ### Local Windows run
 1. Copy `.env.example` to `.env` if the launcher has not already done so.
 2. Open `.env` in Notepad and set `GEMINI_API_KEY=your_key_here`.
-3. Keep `GEMINI_MODEL=gemini-3.8-flash`, `GEMINI_FAST_MODEL=gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS=120`.
+3. Set both `GEMINI_MODEL=gemini-3.5-flash-lite` and `GEMINI_FAST_MODEL=gemini-3.5-flash-lite`, with `AI_CALL_TIMEOUT_SECONDS=120`.
 4. Save the file and run `start_studentsguide.bat` again.
 
 The API key is read only by the Python server. Never place it in frontend JavaScript or commit a populated `.env` file to GitHub. Gemini API free-tier use has quotas and rate limits; check Google's current [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). A free tier is not an unlimited service.
@@ -70,12 +70,12 @@ The API key is read only by the Python server. Never place it in frontend JavaSc
 - Frontend: HTML, CSS and JavaScript
 - Backend: Python and FastAPI
 - PowerPoint extraction: `python-pptx`
-- Generative AI: Gemini 3.5 Flash-Lite with minimal thinking for study guides and MCQ/True-False; Gemini 3.8 Flash for Scenario 15 and Mixed 40
+- Generative AI: Gemini 3.5 Flash-Lite for all generation; minimal thinking for study guides and MCQ/True-False, low thinking for Scenario 15 and Mixed 40
 - Structured JSON output: Gemini `responseMimeType: application/json`
 - Study guide PDF: ReportLab
 - Local launcher: Python + Uvicorn + Windows batch launcher
 
-Model capabilities, supported thinking levels and output limits are documented in the [Gemini 3.8 Flash model reference](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash) and [Gemini thinking guide](https://ai.google.dev/gemini-api/docs/thinking).
+Model capabilities, high-throughput design and output limits are documented in the [Gemini 3.5 Flash-Lite model reference](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite) and [Gemini thinking guide](https://ai.google.dev/gemini-api/docs/thinking).
 
 ## Important limits
 
