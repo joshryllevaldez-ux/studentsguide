@@ -55,7 +55,7 @@ StudentsGUIDE uses the Google Gemini Developer API. Create an API key in [Google
 1. Open the StudentsGUIDE service in Render.
 2. Open **Environment**.
 3. Add `GEMINI_API_KEY` as a secret environment variable and paste the key.
-4. Set `GEMINI_MODEL` to `gemini-3.8-flash`, `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS` to `120` if they are not already set.
+4. Set `GEMINI_MODEL` to `gemini-3.8-flash`, `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS` to `120` if they are not already set. The main study-guide flow and simpler quiz modes use Flash-Lite; applied scenario and Mixed 40 modes use Flash.
 5. Save changes and wait until the deployment is Live.
 
 ### Local Windows run
@@ -70,7 +70,7 @@ The API key is read only by the Python server. Never place it in frontend JavaSc
 - Frontend: HTML, CSS and JavaScript
 - Backend: Python and FastAPI
 - PowerPoint extraction: `python-pptx`
-- Generative AI: Gemini 3.8 Flash for study guides, scenario quizzes and Mixed 40; Gemini 3.5 Flash-Lite for MCQ and True/False quizzes
+- Generative AI: Gemini 3.5 Flash-Lite with minimal thinking for study guides and MCQ/True-False; Gemini 3.8 Flash for Scenario 15 and Mixed 40
 - Structured JSON output: Gemini `responseMimeType: application/json`
 - Study guide PDF: ReportLab
 - Local launcher: Python + Uvicorn + Windows batch launcher
