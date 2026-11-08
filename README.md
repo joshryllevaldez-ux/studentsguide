@@ -64,7 +64,7 @@ StudentsGUIDE uses the Google Gemini Developer API. Create an API key in [Google
 3. Set both `GEMINI_MODEL=gemini-3.5-flash-lite` and `GEMINI_FAST_MODEL=gemini-3.5-flash-lite`, with `AI_CALL_TIMEOUT_SECONDS=120`.
 4. Save the file and run `start_studentsguide.bat` again.
 
-The API key is read only by the Python server. Never place it in frontend JavaScript or commit a populated `.env` file to GitHub. Gemini API free-tier use has quotas and rate limits; check Google's current [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). A free tier is not an unlimited service.
+The API key is read only by the Python server. Never place it in frontend JavaScript or commit a populated `.env` file to GitHub. Identical lecture-and-mode requests are cached in server memory for 30 minutes (up to 12 responses), so an exact repeat does not consume another Gemini request or the app's local generation allowance. Cached lecture content is not stored on persistent disk and is cleared when the service restarts or redeploys. Gemini API free-tier use has quotas and rate limits; check Google's current [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). A free tier is not an unlimited service.
 ## Technology
 
 - Frontend: HTML, CSS and JavaScript

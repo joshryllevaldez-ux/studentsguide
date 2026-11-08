@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import copy
+import hashlib
 import html
 import io
 import json
@@ -9,7 +11,7 @@ import os
 import re
 import threading
 import time
-from collections import defaultdict, deque
+from collections import OrderedDict, defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any
@@ -50,6 +52,12 @@ IP_AI_GENERATION_LIMIT_PER_HOUR = int(os.getenv("IP_AI_GENERATION_LIMIT_PER_HOUR
 DAILY_AI_GENERATION_LIMIT = int(os.getenv("DAILY_AI_GENERATION_LIMIT", "100"))
 AI_CONCURRENCY_LIMIT = max(1, int(os.getenv("AI_CONCURRENCY_LIMIT", "3")))
 AI_CALL_TIMEOUT_SECONDS = max(45, int(os.getenv("AI_CALL_TIMEOUT_SECONDS", "120")))
+AI_RESPONSE_CACHE_TTL_SECONDS = max(0, int(os.getenv("AI_RESPONSE_CACHE_TTL_SECONDS", "1800")))
+AI_RESPONSE_CACHE_MAX_ENTRIES = max(0, int(os.getenv("AI_RESPONSE_CACHE_MAX_ENTRIES", "12")))
+_AI_RESPONSE_CACHE: OrderedDict[str, tuple[float, dict[str, Any]]] = OrderedDict()
+_AI_RESPONSE_CACHE_LOCK = threading.Lock()
+_AI_CACHE_HITS = 0
+_AI_CACHE_MISSES = 0
 _AI_SEMAPHORE = asyncio.Semaphore(AI_CONCURRENCY_LIMIT)
 _AI_LIMIT_LOCK = threading.Lock()
 _AI_REQUESTS_BY_IP: dict[str, deque[float]] = defaultdict(deque)
@@ -62,7 +70,7 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.8"
+APP_VERSION = "0.4.9"
 PROMPT_VERSION = "1.2"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -287,7 +295,7 @@ def parse_json_text(text: str) -> dict[str, Any]:
     return obj
 
 
-async def ask_ai(
+async def _ask_ai_uncached(
     instructions: str,
     user_input: str,
     max_output_tokens: int = 6500,
@@ -436,6 +444,79 @@ async def ask_ai(
         raise HTTPException(status_code=502, detail="Gemini returned an empty response. Please try again.")
     return parse_json_text(output)
 
+
+def _ai_cache_key(instructions: str, user_input: str, max_output_tokens: int, operation: str) -> str:
+    """Hash a complete AI request without storing source text in the cache key."""
+    material = "\\0".join((
+        GEMINI_FAST_MODEL, PROMPT_VERSION, operation, str(max_output_tokens),
+        instructions, user_input,
+    ))
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
+def _read_ai_response_cache(key: str) -> dict[str, Any] | None:
+    """Return a defensive copy of a fresh in-memory response, if available."""
+    global _AI_CACHE_HITS, _AI_CACHE_MISSES
+    if AI_RESPONSE_CACHE_TTL_SECONDS <= 0 or AI_RESPONSE_CACHE_MAX_ENTRIES <= 0:
+        return None
+    now = time.monotonic()
+    with _AI_RESPONSE_CACHE_LOCK:
+        entry = _AI_RESPONSE_CACHE.get(key)
+        if entry is None or now - entry[0] >= AI_RESPONSE_CACHE_TTL_SECONDS:
+            if entry is not None:
+                _AI_RESPONSE_CACHE.pop(key, None)
+            _AI_CACHE_MISSES += 1
+            return None
+        _AI_RESPONSE_CACHE.move_to_end(key)
+        _AI_CACHE_HITS += 1
+        return copy.deepcopy(entry[1])
+
+
+def _store_ai_response_cache(key: str, value: dict[str, Any]) -> None:
+    if AI_RESPONSE_CACHE_TTL_SECONDS <= 0 or AI_RESPONSE_CACHE_MAX_ENTRIES <= 0:
+        return
+    now = time.monotonic()
+    with _AI_RESPONSE_CACHE_LOCK:
+        _AI_RESPONSE_CACHE[key] = (now, copy.deepcopy(value))
+        _AI_RESPONSE_CACHE.move_to_end(key)
+        while len(_AI_RESPONSE_CACHE) > AI_RESPONSE_CACHE_MAX_ENTRIES:
+            _AI_RESPONSE_CACHE.popitem(last=False)
+        expired = [
+            cache_key for cache_key, (created, _) in _AI_RESPONSE_CACHE.items()
+            if now - created >= AI_RESPONSE_CACHE_TTL_SECONDS
+        ]
+        for cache_key in expired:
+            _AI_RESPONSE_CACHE.pop(cache_key, None)
+
+
+async def ask_ai(
+    instructions: str,
+    user_input: str,
+    max_output_tokens: int = 6500,
+    operation: str = "generation",
+    request: Request | None = None,
+) -> dict[str, Any]:
+    """Reuse recent identical generations before consuming quota or calling Gemini."""
+    cache_key = _ai_cache_key(instructions, user_input, max_output_tokens, operation)
+    cached = _read_ai_response_cache(cache_key)
+    if cached is not None:
+        LOGGER.info("ai_cache_hit operation=%s cache_key=%s", operation, cache_key[:12])
+        return cached
+
+    # The app's abuse guard only applies when a real provider request is required.
+    if request is not None:
+        enforce_ai_generation_quota(request)
+
+    result = await _ask_ai_uncached(
+        instructions,
+        user_input,
+        max_output_tokens=max_output_tokens,
+        operation=operation,
+    )
+    _store_ai_response_cache(cache_key, result)
+    return result
+
+
 STUDY_GUIDE_INSTRUCTIONS = """You are StudentsGUIDE, an expert university-level tutor and meticulous lecture-to-learning designer. Your job is to transform the supplied PowerPoint text into a genuinely useful, comprehensive study guide that helps a student understand, remember, and apply the lecture—not merely summarize it.
 
 SOURCE FIDELITY AND COVERAGE
@@ -529,6 +610,12 @@ async def status() -> dict[str, Any]:
         "supported_file": ".pptx",
         "max_ai_generations_per_day": DAILY_AI_GENERATION_LIMIT,
         "ip_ai_generations_per_hour": IP_AI_GENERATION_LIMIT_PER_HOUR,
+        "ai_cache_enabled": AI_RESPONSE_CACHE_TTL_SECONDS > 0 and AI_RESPONSE_CACHE_MAX_ENTRIES > 0,
+        "ai_cache_ttl_seconds": AI_RESPONSE_CACHE_TTL_SECONDS,
+        "ai_cache_max_entries": AI_RESPONSE_CACHE_MAX_ENTRIES,
+        "ai_cache_entries": len(_AI_RESPONSE_CACHE),
+        "ai_cache_hits": _AI_CACHE_HITS,
+        "ai_cache_misses": _AI_CACHE_MISSES,
     }
 
 
@@ -536,7 +623,6 @@ async def status() -> dict[str, Any]:
 async def generate_study_guide(request: Request, file: UploadFile = File(...)) -> dict[str, Any]:
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
-    enforce_ai_generation_quota(request)
     filename = file.filename or "lecture.pptx"
     if not filename.lower().endswith(".pptx"):
         raise HTTPException(status_code=400, detail="Please upload a PowerPoint .pptx file.")
@@ -565,6 +651,7 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         prompt,
         max_output_tokens=guide_output_budget,
         operation="study_guide",
+        request=request,
     )
     if not isinstance(guide.get("sections"), list) or not guide.get("sections"):
         raise HTTPException(status_code=502, detail="The AI response did not contain any study-guide topics. Please try generating again.")
@@ -590,7 +677,6 @@ MODE_SPECS = {
 async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any]:
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=503, detail="AI generation is not connected yet. The StudentsGUIDE administrator must configure the API key on the hosting server.")
-    enforce_ai_generation_quota(request)
     mode = payload.mode.upper().strip()
     if mode not in MODE_SPECS:
         raise HTTPException(status_code=400, detail="Choose one of the five available quiz modes.")
@@ -612,6 +698,7 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         prompt,
         max_output_tokens=quiz_budgets[mode],
         operation=f"quiz_{mode.lower().replace(chr(32), chr(95))}",
+        request=request,
     )
     questions = quiz.get("questions")
     if not isinstance(questions, list) or not questions:

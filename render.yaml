@@ -23,5 +23,9 @@ services:
         value: "2"
       - key: AI_CALL_TIMEOUT_SECONDS
         value: "120"
+      - key: AI_RESPONSE_CACHE_TTL_SECONDS
+        value: "1800"
+      - key: AI_RESPONSE_CACHE_MAX_ENTRIES
+        value: "12"
       - key: MAX_UPLOAD_MB
         value: "50"
