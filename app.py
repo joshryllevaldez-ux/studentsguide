@@ -62,8 +62,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.4"
-PROMPT_VERSION = "0.9"
+APP_VERSION = "0.4.5"
+PROMPT_VERSION = "1.0"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -499,7 +499,10 @@ async def status() -> dict[str, Any]:
         "ok": True,
         "app_version": APP_VERSION,
         "ai_configured": bool(GEMINI_API_KEY),
-        "model": GEMINI_MODEL if GEMINI_API_KEY else None,
+        "model": GEMINI_FAST_MODEL if GEMINI_API_KEY else None,
+        "study_model": GEMINI_FAST_MODEL if GEMINI_API_KEY else None,
+        "applied_quiz_model": GEMINI_MODEL if GEMINI_API_KEY else None,
+        "generation_timeout_seconds": AI_CALL_TIMEOUT_SECONDS,
         "max_upload_mb": MAX_UPLOAD_MB,
         "supported_file": ".pptx",
         "max_ai_generations_per_day": DAILY_AI_GENERATION_LIMIT,
