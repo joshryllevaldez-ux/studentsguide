@@ -645,7 +645,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 .sg-page-left{transform-origin:180px 165px;animation:sgPageLeft 7.2s ease-in-out infinite}
 .sg-page-right{transform-origin:180px 165px;animation:sgPageRight 7.2s ease-in-out infinite}
 .sg-sparkles{opacity:0;animation:sgSparkle 7.2s ease-in-out infinite}
-.sg-progress-fill{animation:sgBarFill 7.2s linear infinite;transform-box:fill-box}
+.sg-progress-fill{animation:sgProgressSweep 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .sg-progress-shine{animation:sgShine 7.2s ease-in-out infinite}
 .sg-check{animation:sgCheck 7.2s ease-in-out infinite}
 .sg-pct{opacity:0;animation-duration:7.2s;animation-iteration-count:infinite}
@@ -660,7 +660,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
 @keyframes sgPageLeft{0%,20%{transform:rotate(-4deg)}40%,60%{transform:rotate(-9deg)}80%,100%{transform:rotate(-1deg)}}
 @keyframes sgPageRight{0%,20%{transform:rotate(4deg)}40%,60%{transform:rotate(9deg)}80%,100%{transform:rotate(1deg)}}
 @keyframes sgSparkle{0%,60%{opacity:0;transform:scale(.5)}80%{opacity:1;transform:scale(1)}100%{opacity:.35;transform:scale(.8)}}
-@keyframes sgBarFill{0%{transform:scaleX(0)}20%{transform:scaleX(.2)}40%{transform:scaleX(.4)}60%{transform:scaleX(.6)}80%{transform:scaleX(.8)}100%{transform:scaleX(1)}}
+@keyframes sgProgressSweep{0%{transform:translateX(0);opacity:.65}50%{transform:translateX(136px);opacity:1}100%{transform:translateX(0);opacity:.65}}
 @keyframes sgShine{0%,20%{opacity:0}40%,80%{opacity:.6}100%{opacity:0}}
 @keyframes sgCheck{0%,80%{opacity:0;transform:scale(.6)}90%,100%{opacity:1;transform:scale(1)}}
 @keyframes sgPct0{0%,12%{opacity:1}14%,100%{opacity:0}}
@@ -906,12 +906,9 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
         </g>
         <g class="sg-sparkles" fill="#ffd34d"><path d="m75 74 4 10 10 4-10 4-4 10-4-10-10-4 10-4Z"/><path d="m286 88 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/></g>
         <rect x="76" y="207" width="208" height="12" rx="6" fill="#102a58" stroke="#4e8fda" stroke-width="1.5"/>
-        <rect class="sg-progress-fill" x="78" y="209" width="204" height="8" rx="4" fill="url(#sgLoadBar)" transform="scale(0 1)" style="transform-origin:78px 0"/>
+        <rect class="sg-progress-fill" x="78" y="209" width="68" height="8" rx="4" fill="url(#sgLoadBar)"/>
         <path class="sg-progress-shine" d="M78 210h204" stroke="#fff" stroke-width="2" opacity="0"/>
         <path class="sg-check" d="m164 212 10 9 22-25" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0" filter="url(#sgLoaderGlow)"/>
-        <g class="sg-percentages" font-family="Manrope,Arial,sans-serif" font-size="17" font-weight="900" text-anchor="middle" fill="#eaf8ff">
-          <text x="180" y="30" class="sg-pct sg-pct-0">0%</text><text x="180" y="30" class="sg-pct sg-pct-20">20%</text><text x="180" y="30" class="sg-pct sg-pct-40">40%</text><text x="180" y="30" class="sg-pct sg-pct-60">60%</text><text x="180" y="30" class="sg-pct sg-pct-80">80%</text><text x="180" y="30" class="sg-pct sg-pct-100">100%</text>
-        </g>
       </svg>
     </div>
     <h3 id="loadingTitle">Preparing your learning materials</h3><p id="loadingMessage">Reading the uploaded lecture and organizing the content.</p>
@@ -1031,6 +1028,11 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       const updateElapsed=()=>{
         const elapsed=Math.floor((Date.now()-loadingStartedAt)/1000);
         $('loadingStep').textContent=loadingStepBase+' · '+elapsed+'s elapsed';
+        if(elapsed>=90){
+          $('loadingMessage').textContent='This is taking longer than expected. The server will stop the request automatically if it reaches its safety timeout.';
+        }else if(elapsed>=35){
+          $('loadingMessage').textContent='StudentsGUIDE is still waiting for the AI result. The moving line is only an activity indicator.';
+        }
       };
       updateElapsed();
       loadingTicker=setInterval(updateElapsed,1000);
@@ -1057,7 +1059,7 @@ body{background:radial-gradient(ellipse at 15% 0%,#122d67 0,transparent 35%),rad
       generationInProgress=true;
       $('generateBtn').disabled=true;
       const form=new FormData();form.append('file',selectedFile);
-      showLoading('Creating your study guide','Uploading and reading your PowerPoint, then generating the study guide. The elapsed timer shows real waiting time, not a fabricated progress percentage.','POWERPOINT + AI GENERATION');
+      showLoading('Creating your study guide','Reading your PowerPoint and generating the guide. The moving line is an activity indicator, not a percentage. The timer shows actual elapsed time.','POWERPOINT + AI GENERATION');
       try{
         const response=await fetch('/api/generate-study-guide',{method:'POST',body:form});
         const data=await readApiJson(response,'Study guide generation');
