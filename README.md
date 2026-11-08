@@ -1,7 +1,7 @@
 # StudentsGUIDE.com — AI Application
 
 **Tagline:** Struggles less, study smart.  
-**Version:** 0.4.3  
+**Version:** 0.4.5  
 **Project:** AIT111 Artificial Intelligence, Fall 2026–2027
 
 StudentsGUIDE is a locally run educational AI application. It takes a student's lecture PowerPoint presentation, extracts the readable slide text, and uses a Generative AI model to create a structured study guide and an interactive quiz. It runs on the student's Windows computer and opens in the default browser at a local address. Public website hosting or a purchased domain is not required for the application demonstration.
@@ -55,13 +55,13 @@ StudentsGUIDE uses the Google Gemini Developer API. Create an API key in [Google
 1. Open the StudentsGUIDE service in Render.
 2. Open **Environment**.
 3. Add `GEMINI_API_KEY` as a secret environment variable and paste the key.
-4. Set `GEMINI_MODEL` to `gemini-3.8-flash` and `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite` if they are not already set.
+4. Set `GEMINI_MODEL` to `gemini-3.8-flash`, `GEMINI_FAST_MODEL` to `gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS` to `120` if they are not already set.
 5. Save changes and wait until the deployment is Live.
 
 ### Local Windows run
 1. Copy `.env.example` to `.env` if the launcher has not already done so.
 2. Open `.env` in Notepad and set `GEMINI_API_KEY=your_key_here`.
-3. Keep `GEMINI_MODEL=gemini-3.8-flash` and `GEMINI_FAST_MODEL=gemini-3.5-flash-lite`.
+3. Keep `GEMINI_MODEL=gemini-3.8-flash`, `GEMINI_FAST_MODEL=gemini-3.5-flash-lite`, and `AI_CALL_TIMEOUT_SECONDS=120`.
 4. Save the file and run `start_studentsguide.bat` again.
 
 The API key is read only by the Python server. Never place it in frontend JavaScript or commit a populated `.env` file to GitHub. Gemini API free-tier use has quotas and rate limits; check Google's current [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). A free tier is not an unlimited service.
