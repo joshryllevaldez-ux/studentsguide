@@ -77,7 +77,7 @@ async def lifespan(application: FastAPI):
         timeout=httpx.Timeout(180.0, connect=20.0),
         limits=httpx.Limits(max_connections=8, max_keepalive_connections=4, keepalive_expiry=30.0),
     )
-    LOGGER.info("service_started study_model=%s quiz_model=%s max_upload_mb=%s concurrency=%s", GEMINI_MODEL, GEMINI_FAST_MODEL, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
+    LOGGER.info("service_started study_model=%s applied_quiz_model=%s fast_model=%s timeout_seconds=%s max_upload_mb=%s concurrency=%s", GEMINI_FAST_MODEL, GEMINI_MODEL, GEMINI_FAST_MODEL, AI_CALL_TIMEOUT_SECONDS, MAX_UPLOAD_MB, AI_CONCURRENCY_LIMIT)
     try:
         yield
     finally:
