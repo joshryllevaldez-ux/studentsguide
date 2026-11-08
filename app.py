@@ -71,8 +71,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite").strip()
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-APP_VERSION = "0.4.10"
-PROMPT_VERSION = "1.2"
+APP_VERSION = "0.4.11"
+PROMPT_VERSION = "1.3"
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -309,10 +309,9 @@ async def _ask_ai_uncached(
             detail="Gemini AI is not connected. The administrator must configure GEMINI_API_KEY on the hosting server.",
         )
 
-    fast_quiz_operations = {"quiz_mcq_20", "quiz_mcq_10", "quiz_true_or_false_10"}
-    use_fast_model = operation == "study_guide" or operation in fast_quiz_operations
-    model = GEMINI_FAST_MODEL  # Use the high-throughput model for every mode to avoid the 20-request/day model quota.
-    thinking_level = "minimal" if use_fast_model else "low"
+    model = GEMINI_FAST_MODEL
+    # Prioritize latency for every lecture and quiz generation.
+    thinking_level = "minimal"
     output_limit = min(max(1024, int(max_output_tokens)), 65536)
     body = {
         "systemInstruction": {"parts": [{"text": instructions}]},
@@ -589,7 +588,7 @@ Return ONLY one valid JSON object:
 
 True/false questions must have exactly True and False options and use correct_answer True or False. MCQ and scenario questions must have four plausible options and use the correct option label A-D. Scenarios must test application, not merely recall.
 
-Keep each question concise but useful: question generally under 35 words; explanation 25-50 words; example one sentence (the first question may use two); brainhack under 18 words; source_basis under 15 words. Do not omit explanations or memory cues. Return exactly the requested number of questions. For MIXED 40, return exactly 16 MCQ, 12 true_false, and 12 scenario questions. Do not add introductory essays or extra fields."""
+Keep each question concise but useful: question generally under 30 words; explanation 20-35 words; example one sentence under 18 words; brainhack under 12 words; source_basis under 10 words. Do not omit explanations or memory cues. Return exactly the requested number of questions. For MIXED 40, return exactly 16 MCQ, 12 true_false, and 12 scenario questions. Do not add introductory essays or extra fields."""
 
 
 @app.get("/")
@@ -646,7 +645,8 @@ async def generate_study_guide(request: Request, file: UploadFile = File(...)) -
         "Use concise teaching explanations and avoid repeating the same point.\n\n"
         "LECTURE CONTENT BY SLIDE:\n" + source_text
     )
-    guide_output_budget = min(32000, 18000 + (len(source_text) // 5000) * 1200)
+    # Keep enough room for a complete guide, without the previous oversized 18k–32k token ceiling.
+    guide_output_budget = min(15000, 9000 + (len(source_text) // 10000) * 1200)
     guide = await ask_ai(
         STUDY_GUIDE_INSTRUCTIONS,
         prompt,
@@ -689,11 +689,11 @@ async def generate_quiz(payload: QuizRequest, request: Request) -> dict[str, Any
         "LECTURE CONTENT:\n" + payload.source_text[:MAX_SOURCE_CHARS]
     )
     quiz_budgets = {
-        "MCQ 20": 9000,
-        "MCQ 10": 5000,
-        "TRUE OR FALSE 10": 3000,
-        "SCENARIO QUESTIONS 15": 9000,
-        "MIXED 40": 16000,
+        "MCQ 20": 7000,
+        "MCQ 10": 4000,
+        "TRUE OR FALSE 10": 2500,
+        "SCENARIO QUESTIONS 15": 8000,
+        "MIXED 40": 14000,
     }
     quiz = await ask_ai(
         QUIZ_INSTRUCTIONS,
